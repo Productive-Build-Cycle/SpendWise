@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Interfaces;
-using SpendWise.Infrastructure;
 using SpendWise.Infrastructure.Persistence;
 
 namespace SpendWise.Infrastructure;
