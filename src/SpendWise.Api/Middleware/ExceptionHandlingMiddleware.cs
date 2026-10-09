@@ -36,6 +36,7 @@ public class ExceptionHandlingMiddleware
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             await context.Response.WriteAsJsonAsync(problem);
         }
+
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
