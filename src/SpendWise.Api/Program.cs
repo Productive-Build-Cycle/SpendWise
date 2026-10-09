@@ -1,4 +1,3 @@
-
 using SpendWise.Api.Middleware;
 using SpendWise.Application;
 using SpendWise.Infrastructure;
@@ -22,12 +21,21 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UseHttpsRedirection();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-}
+    
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "SpendWise API v1");
 
-app.UseHttpsRedirection();
+        options.RoutePrefix = "swagger";
+    });
+}
 
 app.UseAuthorization();
 

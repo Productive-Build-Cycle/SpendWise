@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Interfaces;
 using SpendWise.Infrastructure.Identity;
 using SpendWise.Infrastructure.Persistence;
+using SpendWise.Infrastructure.Persistence.Repositories;
 
 namespace SpendWise.Infrastructure;
 
@@ -37,6 +38,10 @@ public static class DependencyInjection
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITransactionManager, EfTransactionManager>();
+        
         return services;
     }
 }

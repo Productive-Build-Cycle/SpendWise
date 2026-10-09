@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SpendWise.Application.Interfaces;
 using SpendWise.Domain.Common;
+using SpendWise.Domain.Entities;
 using SpendWise.Infrastructure.Identity;
 
 namespace SpendWise.Infrastructure.Persistence;
@@ -12,7 +13,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
-
+    
+    public DbSet<User> Users => Set<User>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
