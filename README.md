@@ -345,10 +345,7 @@ SpendWise is mentored by a Microsoft engineer and follows enterprise software en
 SpendWise is licensed under the [MIT License](LICENSE).
 
 ## 👥 Team
-
-- **Mentor:** Microsoft Senior Engineer
 - **Organization:** [Productive Build Cycle](https://github.com/Productive-Build-Cycle)
-- **SRE:** Amir-Golmoradi
 
 ## 📞 Support
 
