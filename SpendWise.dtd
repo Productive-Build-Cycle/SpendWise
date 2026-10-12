@@ -1,0 +1,5 @@
+<!ELEMENT Solution (Folder)>
+<!ELEMENT Folder (Project+)>
+<!ATTLIST Folder Name CDATA #REQUIRED>
+<!ELEMENT Project EMPTY>
+<!ATTLIST Project Path CDATA #REQUIRED>

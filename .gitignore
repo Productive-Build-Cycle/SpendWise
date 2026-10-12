@@ -492,3 +492,5 @@ appsettings.Local.json
 
 # User-uploaded files
 src/SpendWise.Api/wwwroot/uploads/
+
+docs/DEVOPS_DATABASE_ROADMAP.md
