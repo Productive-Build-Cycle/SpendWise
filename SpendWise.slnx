@@ -1,8 +1,10 @@
+<?xml-model href="SpendWise.dtd"?>
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SpendWise.Api/SpendWise.Api.csproj" />
     <Project Path="src/SpendWise.Application/SpendWise.Application.csproj" />
     <Project Path="src/SpendWise.Domain/SpendWise.Domain.csproj" />
     <Project Path="src/SpendWise.Infrastructure/SpendWise.Infrastructure.csproj" />
+    <Project Path="src/SpenWise.Shared/SpenWise.Shared.csproj" />
   </Folder>
 </Solution>
