@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SpendWise.Application.Interfaces;
 using SpendWise.Domain.Common;
 using SpendWise.Domain.Entities;
+using SpendWise.Infrastructure.Authentication.RefreshTokens;
 using SpendWise.Infrastructure.Identity;
 
 namespace SpendWise.Infrastructure.Persistence;
@@ -14,7 +15,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     {
     }
     
-    public DbSet<User> Users => Set<User>();
+    public DbSet<User> DomainUsers => Set<User>();
+    public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

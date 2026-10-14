@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Interfaces;
 using SpendWise.Infrastructure.Authentication.Jwt;
+using SpendWise.Infrastructure.Authentication.RefreshTokens;
 using SpendWise.Infrastructure.Identity;
 using SpendWise.Infrastructure.Persistence;
 using SpendWise.Infrastructure.Persistence.Repositories;
@@ -42,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITransactionManager, EfTransactionManager>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
         
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName)
                              .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");

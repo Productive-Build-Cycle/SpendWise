@@ -180,6 +180,64 @@ namespace SpendWise.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("SpendWise.Infrastructure.Authentication.RefreshTokens.RefreshTokenEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte?>("RevocationReason")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .IsUnicode(false)
+                        .HasColumnType("char(64)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAtUtc")
+                        .HasDatabaseName("IX_RefreshTokens_ExpiresAtUtc");
+
+                    b.HasIndex("ReplacedByTokenId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("UX_RefreshTokens_TokenHash");
+
+                    b.HasIndex("FamilyId", "ExpiresAtUtc")
+                        .HasDatabaseName("IX_RefreshTokens_FamilyId_ExpiresAtUtc");
+
+                    b.HasIndex("UserId", "ExpiresAtUtc")
+                        .HasDatabaseName("IX_RefreshTokens_UserId_ExpiresAtUtc");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("SpendWise.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -295,6 +353,22 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SpendWise.Infrastructure.Authentication.RefreshTokens.RefreshTokenEntity", b =>
+                {
+                    b.HasOne("SpendWise.Infrastructure.Authentication.RefreshTokens.RefreshTokenEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ReplacedByTokenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_RefreshTokens_RefreshTokens_ReplacedByTokenId");
+
+                    b.HasOne("SpendWise.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_RefreshTokens_AspNetUsers_UserId");
                 });
 #pragma warning restore 612, 618
         }
