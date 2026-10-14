@@ -1,3 +1,4 @@
+using SpendWise.Api.Extensions;
 using SpendWise.Api.Middleware;
 using SpendWise.Application;
 using SpendWise.Infrastructure;
@@ -12,6 +13,8 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddJwtAuthentication();
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -25,7 +28,7 @@ app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
     
     app.UseSwaggerUI(options =>
     {
@@ -37,6 +40,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Interfaces;
+using SpendWise.Infrastructure.Authentication.Jwt;
 using SpendWise.Infrastructure.Identity;
 using SpendWise.Infrastructure.Persistence;
 using SpendWise.Infrastructure.Persistence.Repositories;
@@ -41,6 +42,19 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITransactionManager, EfTransactionManager>();
+        
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName)
+                             .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+
+        jwtOptions.Validate();
+
+        var jwtKeyProvider = new PemJwtKeyProvider(jwtOptions);
+
+        services.AddSingleton(jwtOptions);
+
+        services.AddSingleton<IJwtKeyProvider>(_ => jwtKeyProvider);
+
+        services.AddSingleton<IJwtService, JwtService>();
         
         return services;
     }
