@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpendWise.Api.Contracts.Authentication;
 using SpendWise.Application.Features.Commands.Authentication.Login;
+using SpendWise.Application.Features.Commands.Authentication.Refresh;
 using SpendWise.Application.Features.Commands.Authentication.Register;
 
 namespace SpendWise.Api.Controllers;
@@ -54,5 +55,50 @@ public class AuthController : ControllerBase
             ExpiresIn: result.ExpiresInSeconds);
 
         return Ok(response);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(
+        CancellationToken cancellationToken)
+    {
+        if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var rawRefreshToken) ||
+            string.IsNullOrWhiteSpace(rawRefreshToken))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _sender.Send(new RefreshTokenCommand(rawRefreshToken), cancellationToken);
+
+        if (!result.Succeeded || string.IsNullOrWhiteSpace(result.AccessToken) ||
+            string.IsNullOrWhiteSpace(result.RawRefreshToken) || result.RefreshTokenExpiresAtUtc is null)
+        {
+            Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/auth"
+            });
+
+            return Unauthorized();
+        }
+
+        Response.Cookies.Append(RefreshTokenCookieName, result.RawRefreshToken,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/auth",
+                Expires = result.RefreshTokenExpiresAtUtc.Value
+            });
+
+        return Ok(new
+        {
+            AccessToken = result.AccessToken,
+            TokenType = "Bearer",
+            ExpiresIn = result.ExpiresInSeconds
+        });
     }
 }

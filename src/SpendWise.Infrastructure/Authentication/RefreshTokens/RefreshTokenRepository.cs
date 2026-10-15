@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SpendWise.Application.Common.Enums;
 using SpendWise.Application.Common.Models;
 using SpendWise.Application.Interfaces;
 using SpendWise.Infrastructure.Persistence;
@@ -21,8 +22,7 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         if (refreshToken.RevokedAtUtc.HasValue || refreshToken.ReplacedByTokenId.HasValue ||
             refreshToken.RevocationReason.HasValue)
         {
-            throw new ArgumentException("A new refresh token cannot already be revoked or replaced.",
-                nameof(refreshToken));
+            throw new ArgumentException("A new refresh token cannot already be revoked or replaced.", nameof(refreshToken));
         }
 
         var entity = new RefreshTokenEntity(
@@ -61,6 +61,39 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
             entity.RevokedAtUtc.HasValue ? DateTime.SpecifyKind(entity.RevokedAtUtc.Value, DateTimeKind.Utc) : null,
             entity.ReplacedByTokenId,
             entity.RevocationReason);
+    }
+
+    public async Task RevokeAsync(Guid tokenId, DateTime revokedAtUtc, RefreshTokenRevocationReason reason,
+        Guid? replacedByTokenId = null, CancellationToken cancellationToken = default)
+    {
+        if (tokenId == Guid.Empty)
+            throw new ArgumentException("Token ID cannot be empty.", nameof(tokenId));
+
+        var entity = await _dbContext.RefreshTokens
+            .SingleOrDefaultAsync(token => token.Id == tokenId, cancellationToken);
+
+        if (entity is null)
+            throw new KeyNotFoundException("Refresh token was not found.");
+
+        entity.Revoke(revokedAtUtc, reason, replacedByTokenId);
+    }
+
+    public async Task RevokeActiveFamilyAsync(Guid familyId, DateTime revokedAtUtc, RefreshTokenRevocationReason reason, CancellationToken cancellationToken = default)
+    {
+        if (familyId == Guid.Empty)
+            throw new ArgumentException("Token family ID cannot be empty.", nameof(familyId));
+
+        if (revokedAtUtc.Kind != DateTimeKind.Utc)
+            throw new ArgumentException("Revocation time must be UTC.", nameof(revokedAtUtc));
+
+        var activeTokens = await _dbContext.RefreshTokens
+            .Where(token => token.FamilyId == familyId && token.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var token in activeTokens)
+        {
+            token.Revoke(revokedAtUtc, reason);
+        }
     }
 
     private static bool IsValidHash(string? hash)
