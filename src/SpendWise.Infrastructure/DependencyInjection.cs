@@ -38,17 +38,27 @@ public static class DependencyInjection
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddSignInManager();
 
+        var refreshTokenOptions =
+            configuration.GetSection(RefreshTokenOptions.SectionName).Get<RefreshTokenOptions>() ??
+            new RefreshTokenOptions();
+        refreshTokenOptions.Validate();
+        services.AddSingleton(refreshTokenOptions);
+
+        refreshTokenOptions.Validate();
+
+        services.AddSingleton(refreshTokenOptions);
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITransactionManager, EfTransactionManager>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
-        
+
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName)
-                             .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+            .Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
 
         jwtOptions.Validate();
 
@@ -59,7 +69,7 @@ public static class DependencyInjection
         services.AddSingleton<IJwtKeyProvider>(_ => jwtKeyProvider);
 
         services.AddSingleton<IJwtService, JwtService>();
-        
+
         return services;
     }
 }

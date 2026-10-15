@@ -4,5 +4,8 @@ namespace SpendWise.Application.Interfaces;
 
 public interface IIdentityService
 {
-    Task<IdentityOperationResult> CreateUserAsync(Guid userId, string userName, string password, CancellationToken cancellationToken = default);
+    Task<IdentityOperationResult> CreateUserAsync(Guid userId, string userName, string password,
+        CancellationToken cancellationToken = default);
+
+    Task<Guid?> AuthenticateAsync(string userName, string password, CancellationToken cancellationToken = default);
 }
