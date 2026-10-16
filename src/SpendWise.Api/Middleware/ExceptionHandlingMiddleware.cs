@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using SpendWise.Application.Common.Exceptions;
 
 namespace SpendWise.Api.Middleware;
 
@@ -36,6 +37,25 @@ public class ExceptionHandlingMiddleware
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             await context.Response.WriteAsJsonAsync(problem);
         }
+
+        catch (InvalidCredentialsException)
+        {
+            var problem = new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Authentication failed.",
+                Detail = "Invalid username or password.",
+                Instance = context.Request.Path
+            };
+
+            problem.Extensions["traceId"] = context.TraceIdentifier;
+
+            context.Response.Headers.CacheControl = "no-store";
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+            await context.Response.WriteAsJsonAsync(problem);
+        }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
