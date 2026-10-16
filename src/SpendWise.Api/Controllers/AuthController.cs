@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpendWise.Api.Contracts.Authentication;
 using SpendWise.Application.Features.Commands.Authentication.Login;
+using SpendWise.Application.Features.Commands.Authentication.Logout;
 using SpendWise.Application.Features.Commands.Authentication.Refresh;
 using SpendWise.Application.Features.Commands.Authentication.Register;
 
@@ -100,5 +101,25 @@ public class AuthController : ControllerBase
             TokenType = "Bearer",
             ExpiresIn = result.ExpiresInSeconds
         });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(
+        CancellationToken cancellationToken)
+    {
+        Request.Cookies.TryGetValue(RefreshTokenCookieName, out var rawRefreshToken);
+
+        await _sender.Send(new LogoutCommand(rawRefreshToken), cancellationToken);
+
+        Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Path = "/api/auth"
+        });
+
+        return NoContent();
     }
 }
