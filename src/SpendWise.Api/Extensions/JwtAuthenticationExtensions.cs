@@ -62,6 +62,7 @@ public static class JwtAuthenticationExtensions
 
                         var validIssuedAt =
                             long.TryParse(iat, NumberStyles.None, CultureInfo.InvariantCulture, out var issuedAt)
+                            &&  issuedAt > 0
                             && issuedAt <= DateTimeOffset.UtcNow.ToUnixTimeSeconds() + jwt.ClockSkewSeconds;
 
                         if (!validSubject || !validJti || !validIssuedAt)

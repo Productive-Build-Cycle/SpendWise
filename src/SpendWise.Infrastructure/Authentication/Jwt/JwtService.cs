@@ -1,6 +1,4 @@
-﻿
-using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using SpendWise.Application.Common.Models;
 using SpendWise.Application.Interfaces;

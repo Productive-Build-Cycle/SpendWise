@@ -5,7 +5,6 @@ using SpendWise.Application.Features.Queries.GetHealth;
 
 namespace SpendWise.Api.Controllers;
 
-[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
