@@ -17,7 +17,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     
     public DbSet<User> DomainUsers => Set<User>();
     public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
-    
+
+    public DbSet<Account> Accounts => Set<Account>();
+
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<Budget> Budgets => Set<Budget>();
+
+    public DbSet<FinancialGoal> FinancialGoals => Set<FinancialGoal>();
+
+    public DbSet<GoalContribution> GoalContributions => Set<GoalContribution>();
+
+   public DbSet<GoalContributionRelease> GoalContributionReleases => Set<GoalContributionRelease>();
+
+    public DbSet<Transactions> Transactions => Set<Transactions>();
+    public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>();
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

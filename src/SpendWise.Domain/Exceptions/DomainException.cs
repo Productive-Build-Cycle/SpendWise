@@ -1,4 +1,4 @@
-﻿namespace MyShop.Domain.Exceptions;
+﻿namespace SpendWise.Domain.Exceptions;
 
 public abstract class DomainException : Exception
 {
