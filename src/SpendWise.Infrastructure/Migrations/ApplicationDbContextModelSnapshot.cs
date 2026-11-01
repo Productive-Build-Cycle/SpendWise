@@ -168,10 +168,15 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("tinyint");
 
                     b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("CreditLimit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -179,6 +184,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("nvarchar(3)");
 
                     b.Property<decimal>("OpeningBalance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
@@ -191,7 +197,16 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Accounts", (string)null);
+                    b.ToTable("Accounts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "[Balance] >= 0");
+
+                            t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "[CreditLimit] IS NULL OR [CreditLimit] > 0");
+
+                            t.HasCheckConstraint("CK_Accounts_Currency_USD", "[Currency] = 'USD'");
+
+                            t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "[OpeningBalance] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.Budget", b =>
@@ -227,7 +242,12 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Budgets", (string)null);
+                    b.ToTable("Budgets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Budgets_Amount_Positive", "[Amount] > 0");
+
+                            t.HasCheckConstraint("CK_Budgets_DateRange_Valid", "[StartDate] < [EndDate]");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.Category", b =>
@@ -281,6 +301,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<decimal>("TargetAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateOnly>("TargetDate")
@@ -296,7 +317,10 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FinancialGoals", (string)null);
+                    b.ToTable("FinancialGoals", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FinancialGoals_TargetAmount_Positive", "[TargetAmount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.GoalContribution", b =>
@@ -309,6 +333,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ContributionAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateOnly>("ContributionDate")
@@ -334,7 +359,10 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("TransactionId");
 
-                    b.ToTable("GoalContributions", (string)null);
+                    b.ToTable("GoalContributions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_GoalContributions_ContributionAmount_Positive", "[ContributionAmount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.GoalContributionRelease", b =>
@@ -350,10 +378,11 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ReleaseAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("ReleaseDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("ReleaseDate")
+                        .HasColumnType("date");
 
                     b.Property<Guid?>("TransactionId")
                         .HasColumnType("uniqueidentifier");
@@ -367,7 +396,10 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("TransactionId");
 
-                    b.ToTable("GoalContributionReleases", (string)null);
+                    b.ToTable("GoalContributionReleases", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_GoalContributionReleases_ReleaseAmount_Positive", "[ReleaseAmount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.RecurringTransaction", b =>
@@ -377,6 +409,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("CategoryId")
@@ -391,8 +424,8 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Frequency")
-                        .HasColumnType("int");
+                    b.Property<byte>("Frequency")
+                        .HasColumnType("tinyint");
 
                     b.Property<DateTime>("NextOccurrenceDate")
                         .HasColumnType("datetime2");
@@ -408,8 +441,8 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("TransactionType")
-                        .HasColumnType("int");
+                    b.Property<byte>("TransactionType")
+                        .HasColumnType("tinyint");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -427,7 +460,16 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecurringTransactions", (string)null);
+                    b.ToTable("RecurringTransactions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RecurringTransactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "[Amount] > 0");
+
+                            t.HasCheckConstraint("CK_RecurringTransactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
+
+                            t.HasCheckConstraint("CK_RecurringTransactions_ValidDates", "[StartDate] <= [NextOccurrenceDate] AND ([EndDate] IS NULL OR ([EndDate] >= [StartDate] AND [NextOccurrenceDate] <= [EndDate]))");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.Transactions", b =>
@@ -437,6 +479,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAtUtc")
@@ -455,8 +498,8 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("TransactionType")
-                        .HasColumnType("int");
+                    b.Property<byte>("TransactionType")
+                        .HasColumnType("tinyint");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -472,7 +515,14 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Transactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_Transactions_Amount_Positive", "[Amount] > 0");
+
+                            t.HasCheckConstraint("CK_Transactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.User", b =>
@@ -680,7 +730,7 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("SpendWise.Domain.Entities.Account", b =>
                 {
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("Accounts")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -697,7 +747,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("Budgets")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -710,7 +760,7 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("SpendWise.Domain.Entities.Category", b =>
                 {
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("Categories")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -721,7 +771,7 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("SpendWise.Domain.Entities.FinancialGoal", b =>
                 {
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("FinancialGoals")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -791,7 +841,7 @@ namespace SpendWise.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("RecurringTransactions")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -808,17 +858,17 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("SpendWise.Domain.Entities.Transactions", b =>
                 {
                     b.HasOne("SpendWise.Domain.Entities.Account", "DestinationAccount")
-                        .WithMany()
+                        .WithMany("DestinationTransactions")
                         .HasForeignKey("DestinationAccountId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SpendWise.Domain.Entities.Account", "SourceAccount")
-                        .WithMany()
+                        .WithMany("SourceTransactions")
                         .HasForeignKey("SourceAccountId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
-                        .WithMany("Transactions")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -846,6 +896,13 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasConstraintName("FK_RefreshTokens_AspNetUsers_UserId");
                 });
 
+            modelBuilder.Entity("SpendWise.Domain.Entities.Account", b =>
+                {
+                    b.Navigation("DestinationTransactions");
+
+                    b.Navigation("SourceTransactions");
+                });
+
             modelBuilder.Entity("SpendWise.Domain.Entities.FinancialGoal", b =>
                 {
                     b.Navigation("Contributions");
@@ -854,21 +911,6 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("SpendWise.Domain.Entities.GoalContribution", b =>
                 {
                     b.Navigation("Releases");
-                });
-
-            modelBuilder.Entity("SpendWise.Domain.Entities.User", b =>
-                {
-                    b.Navigation("Accounts");
-
-                    b.Navigation("Budgets");
-
-                    b.Navigation("Categories");
-
-                    b.Navigation("FinancialGoals");
-
-                    b.Navigation("RecurringTransactions");
-
-                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }
