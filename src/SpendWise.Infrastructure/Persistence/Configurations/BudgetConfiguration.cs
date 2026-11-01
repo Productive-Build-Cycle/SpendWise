@@ -8,12 +8,21 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Budget> builder)
         {
-            builder.ToTable("Budgets");
+            builder.ToTable("Budgets", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_Budgets_Amount_Positive",
+                    "[Amount] > 0");
+
+                table.HasCheckConstraint(
+                    "CK_Budgets_DateRange_Valid",
+                    "[StartDate] < [EndDate]");
+            });
 
             builder.HasKey(budget => budget.Id);
 
             builder.HasOne(budget => budget.User)
-                   .WithMany(user => user.Budgets)
+                   .WithMany()
                    .HasForeignKey(budget => budget.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 

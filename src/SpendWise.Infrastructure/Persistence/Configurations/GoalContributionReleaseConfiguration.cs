@@ -8,7 +8,12 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<GoalContributionRelease> builder)
         {
-            builder.ToTable("GoalContributionReleases");
+            builder.ToTable("GoalContributionReleases", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_GoalContributionReleases_ReleaseAmount_Positive",
+                    "[ReleaseAmount] > 0");
+            });
             builder.HasKey(release => release.Id);
             builder.HasOne(release => release.GoalContribution)
                    .WithMany(contribution => contribution.Releases)
@@ -16,11 +21,11 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                     .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(release => release.ReleaseAmount)
-                   .HasColumnType("decimal(18,2)")
+                   .HasPrecision(18, 2)
                    .IsRequired();
 
             builder.Property(release => release.ReleaseDate)
-                   .HasColumnType("datetime2")
+                   .HasColumnType("date")
                    .IsRequired();
 
             builder.HasOne(release => release.Transaction)

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SpendWise.Domain.Enums
 {
-    public enum RecurringFrequency
+    public enum RecurringFrequency:byte
     {
         Daily=1,
         Weekly = 2,

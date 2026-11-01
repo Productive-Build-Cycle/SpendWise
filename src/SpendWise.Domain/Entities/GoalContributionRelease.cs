@@ -1,4 +1,5 @@
 ﻿using SpendWise.Domain.Common;
+using SpendWise.Domain.Exceptions;
 
 
 namespace SpendWise.Domain.Entities
@@ -8,7 +9,7 @@ namespace SpendWise.Domain.Entities
         public Guid GoalContributionId { get;private set; }
         public GoalContribution GoalContribution { get; private set; } = null!;
         public decimal ReleaseAmount { get; private set; }
-        public DateTime ReleaseDate { get; private set; }
+        public DateOnly ReleaseDate { get; private set; }
        
      
         public Guid? TransactionId { get; private set; }
@@ -18,7 +19,7 @@ namespace SpendWise.Domain.Entities
         }
         public GoalContributionRelease(Guid goalContributionId,
                                        decimal releaseAmount,
-                                       DateTime releaseDate,
+                                       DateOnly releaseDate,
                                        Guid? transactionId = null)
         {
             if (transactionId == Guid.Empty)
@@ -28,15 +29,18 @@ namespace SpendWise.Domain.Entities
             }
             if (goalContributionId == Guid.Empty)
             {
-                throw new ArgumentException("Goal Contribution ID cannot be empty.", nameof(goalContributionId));
+                throw new ArgumentException(
+                    "Goal Contribution ID cannot be empty.", nameof(goalContributionId));
             }
             if (releaseAmount <= 0)
             {
-                throw new ArgumentException("Release amount must be greater than zero.", nameof(releaseAmount));
+                throw new ValidationException(
+                    "Release amount must be greater than zero.");
             }
-            if (releaseDate > DateTime.UtcNow)
+            if (releaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                throw new ArgumentException("Release date cannot be in the future.", nameof(releaseDate));
+                throw new ValidationException(
+                   "Release date cannot be in the future.");
             }
             GoalContributionId = goalContributionId;
             ReleaseAmount = releaseAmount;

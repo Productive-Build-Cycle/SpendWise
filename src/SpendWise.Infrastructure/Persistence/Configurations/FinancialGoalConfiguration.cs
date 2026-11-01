@@ -8,12 +8,17 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<FinancialGoal> builder)
         {
-            builder.ToTable("FinancialGoals");
+            builder.ToTable("FinancialGoals", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_FinancialGoals_TargetAmount_Positive",
+                    "[TargetAmount] > 0");
+            });
 
             builder.HasKey(goal => goal.Id);
 
             builder.HasOne(goal => goal.User)
-                   .WithMany(user => user.FinancialGoals)
+                   .WithMany()
                    .HasForeignKey(goal => goal.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
@@ -22,7 +27,7 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                    .IsRequired();
 
             builder.Property(goal => goal.TargetAmount)
-                   .HasColumnType("decimal(18,2)")
+                   .HasPrecision(18, 2)
                    .IsRequired();
 
            

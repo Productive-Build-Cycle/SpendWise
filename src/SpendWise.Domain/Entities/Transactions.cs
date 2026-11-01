@@ -1,5 +1,6 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Enums;
+using SpendWise.Domain.Exceptions;
 
 
 
@@ -21,6 +22,8 @@ namespace SpendWise.Domain.Entities
         public decimal Amount { get; private set; }
         public string? Description { get; private set; } 
         public DateTime TransactionDate { get; private  set; } // The date and time when the transaction occurred.It is not the date and time when the transaction was created in the system.
+
+        
         private Transactions()
         {
         }
@@ -44,33 +47,46 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("Destination account ID cannot be empty.", nameof(destinationAccountId));
             }
-            if (sourceAccountId.HasValue && destinationAccountId.HasValue && sourceAccountId.Value == destinationAccountId.Value)
+            if (sourceAccountId.HasValue && destinationAccountId.HasValue && 
+                sourceAccountId.Value == destinationAccountId.Value)
             {
-                throw new ArgumentException("Source and destination account IDs cannot be the same.");
+                throw new ValidationException("Source and destination account IDs cannot be the same.");
             }
             if (sourceAccountId is null && destinationAccountId is null)
             {
-                throw new ArgumentException(
+                throw new ValidationException(
                     "At least one account must be provided.");
             }
             if (amount <= 0)
             {
-                throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
+                throw new ValidationException(
+                   "Amount must be greater than zero." );
             }
             if (string.IsNullOrWhiteSpace(description))
             {
-                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+                description = null; 
             }
+            else
+            {
+                description = description.Trim();
+                if (description.Length > 500)
+                {
+                    throw new ValidationException(
+                        "Description cannot exceed 500 characters.");
+                }
+            }
+           
             if (transactionDate > DateTime.UtcNow)
             {
-                throw new ArgumentException("Transaction date cannot be in the future.", nameof(transactionDate));
+                throw new ValidationException(
+                    "Transaction date cannot be in the future." );
             }
             switch (transactionType)
             {
                 case TransactionTypes.Income:
                     if (sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ArgumentException(
+                        throw new ValidationException(
                             "Income transactions require a destination account and no source account.");
                     }
                     break;
@@ -78,7 +94,7 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Expense:
                     if (!sourceAccountId.HasValue || destinationAccountId.HasValue)
                     {
-                        throw new ArgumentException(
+                        throw new ValidationException(
                             "Expense transactions require a source account and no destination account.");
                     }
                     break;
@@ -86,14 +102,13 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Transfer:
                     if (!sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ArgumentException(
+                        throw new ValidationException(
                             "Transfer transactions require both source and destination accounts.");
                     }
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(transactionType),
+                    throw new ValidationException(
                         "Invalid transaction type.");
             }
             SourceAccountId = sourceAccountId;
@@ -101,7 +116,7 @@ namespace SpendWise.Domain.Entities
             TransactionType = transactionType;
             UserId = userId;
             Amount = amount;
-            Description = description.Trim();
+            Description = description;
             TransactionDate = transactionDate;
         }
     }

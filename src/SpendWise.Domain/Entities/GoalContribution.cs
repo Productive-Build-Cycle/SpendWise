@@ -1,4 +1,5 @@
 ﻿using SpendWise.Domain.Common;
+using SpendWise.Domain.Exceptions;
 
 
 namespace SpendWise.Domain.Entities
@@ -7,16 +8,18 @@ namespace SpendWise.Domain.Entities
     {
        
         public Guid FinancialGoalId { get;private set; }
-        public FinancialGoal FinancialGoal { get; private set; } 
+        public FinancialGoal FinancialGoal { get; private set; } = null!;
         public decimal ContributionAmount { get; private set; }
         public DateOnly ContributionDate { get; private set; }
         public Guid AccountId { get; private set; }
-        public Account Account { get; private set; } 
+        public Account Account { get; private set; } = null!;
         public Guid? TransactionId { get; private set; }
         public Transactions? Transaction { get; private set; }
 
-        public ICollection<GoalContributionRelease> Releases { get; private set; }
-         = new List<GoalContributionRelease>();
+        private readonly List<GoalContributionRelease> _releases = new();
+
+        public IReadOnlyCollection<GoalContributionRelease> Releases => _releases.AsReadOnly();
+
 
         private GoalContribution()
         {
@@ -38,11 +41,11 @@ namespace SpendWise.Domain.Entities
             }
             if (contributionAmount <= 0)
             {
-                throw new ArgumentException("Contribution amount must be greater than zero.", nameof(contributionAmount));
+                throw new ValidationException("Contribution amount must be greater than zero.");
             }
             if (contributionDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                throw new ArgumentException("Contribution date cannot be in the future.", nameof(contributionDate));
+                throw new ValidationException("Contribution date cannot be in the future.");
             }
             if (accountId == Guid.Empty)
             {
@@ -53,6 +56,43 @@ namespace SpendWise.Domain.Entities
             ContributionDate = contributionDate;
             AccountId = accountId;
             TransactionId = transactionId;
+        }
+        public void AddRelease(GoalContributionRelease release)
+        {
+            ArgumentNullException.ThrowIfNull(release);
+            if(release.GoalContributionId != Id)
+            {
+                throw new ValidationException(
+                    "The release does not belong to this contribution.");
+            }
+            if (_releases.Any(r => r.Id == release.Id))
+            {
+                throw new ValidationException(
+                    "This release has already been added to the contribution.");
+            }
+      
+            if (release.ReleaseAmount <= 0)
+            {
+                throw new ValidationException(
+                    "The release amount must be greater than zero.");
+            }
+            decimal remainingAmount=ContributionAmount - _releases.Sum(r=>r.ReleaseAmount);
+            if (release.ReleaseAmount > remainingAmount)
+            {
+                throw new ValidationException(
+                    "The release amount exceeds the remaining contribution amount.");
+            }
+            if (release.ReleaseDate < ContributionDate)
+            {
+                throw new ValidationException(
+                    "The release date cannot be earlier than the contribution date.");
+            }
+            if(release.ReleaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                throw new ValidationException(
+                    "The release date cannot be in the future.");
+            }
+            _releases.Add(release);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SpendWise.Domain.Enums
 {
-    public enum TransactionTypes
+    public enum TransactionTypes:byte
     {
        Income = 1,
        Expense = 2,

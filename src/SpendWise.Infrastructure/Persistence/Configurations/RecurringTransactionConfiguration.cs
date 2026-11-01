@@ -8,12 +8,32 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<RecurringTransaction> builder)
         {
-            builder.ToTable("RecurringTransactions");
+            builder.ToTable("RecurringTransactions", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_RecurringTransactions_Amount_Positive",
+                    "[Amount] > 0");
+
+                table.HasCheckConstraint(
+                    "CK_RecurringTransactions_DifferentAccounts",
+                    "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR " +
+                    "[SourceAccountId] <> [DestinationAccountId]");
+
+                table.HasCheckConstraint(
+                    "CK_RecurringTransactions_ValidDates",
+                    "[StartDate] <= [NextOccurrenceDate] AND ([EndDate] IS NULL OR" +
+                    " ([EndDate] >= [StartDate] AND [NextOccurrenceDate] <= [EndDate]))");
+                table.HasCheckConstraint(
+                    "CK_RecurringTransactions_AccountCombination",
+                    "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR " +
+                    "([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR " +
+                    "([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
+            });
 
             builder.HasKey(rt => rt.Id);
 
             builder.HasOne(rt => rt.User)
-                   .WithMany(user => user.RecurringTransactions)
+                   .WithMany()
                    .HasForeignKey(rt => rt.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
@@ -22,7 +42,7 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                    .IsRequired();
 
             builder.Property(rt => rt.Amount)
-                   .HasColumnType("decimal(18,2)")
+                   .HasPrecision(18, 2)
                    .IsRequired();
 
             builder.Property(rt => rt.Frequency)

@@ -13,7 +13,7 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
             builder.HasKey(category => category.Id);
 
             builder.HasOne(category => category.User)
-                  .WithMany(user => user.Categories)
+                  .WithMany()
                   .HasForeignKey(category => category.UserId)
                   .OnDelete(DeleteBehavior.Restrict);
 

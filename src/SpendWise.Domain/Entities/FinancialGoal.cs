@@ -1,5 +1,5 @@
 ﻿using SpendWise.Domain.Common;
-
+using SpendWise.Domain.Exceptions;
 
 namespace SpendWise.Domain.Entities
 {
@@ -10,7 +10,8 @@ namespace SpendWise.Domain.Entities
         public string GoalName { get; private set; } = string.Empty;
         public decimal TargetAmount { get; private set; }
         public DateOnly TargetDate { get; private set; }
-        public ICollection<GoalContribution> Contributions { get; private set; } = new List<GoalContribution>();
+        private readonly List<GoalContribution> _contributions = new();
+        public IReadOnlyCollection<GoalContribution> Contributions => _contributions.AsReadOnly();
 
         public bool IsArchived { get; private set; } = false;
 
@@ -32,9 +33,14 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("Goal name cannot be null or empty.", nameof(goalName));
             }
+            if(goalName.Length > 100)
+            {
+                throw new ValidationException("Goal name cannot exceed 100 characters.");
+            }
             if (targetAmount <= 0)
             {
-                throw new ArgumentException("Target amount must be greater than zero.", nameof(targetAmount));
+                throw new ValidationException(
+                                "Target amount must be greater than zero." );
             }
             if (targetDate <=DateOnly.FromDateTime(DateTime.UtcNow))
             {
@@ -45,8 +51,48 @@ namespace SpendWise.Domain.Entities
             TargetAmount = targetAmount;
             TargetDate = targetDate;
         }
-        public void Archive()
+        //...............................................................
+        public void AddContribution(GoalContribution contribution)
         {
+            if (IsArchived)
+            {
+                throw new ValidationException(
+                    "Cannot add a contribution to an archived goal.");
+            }
+
+            ArgumentNullException.ThrowIfNull(contribution);
+
+            if (contribution.FinancialGoalId != Id)
+            {
+                throw new ValidationException(
+                    "This contribution belongs to another financial goal.");
+            }
+
+            if (_contributions.Any(c => c.Id == contribution.Id))
+            {
+                throw new ValidationException(
+                    "This contribution already exists in this financial goal.");
+            }
+
+            _contributions.Add(contribution);
+        }
+        public void Archive(decimal remainingAllocateAmount)
+        {
+            if (IsArchived)
+            {
+                throw new ValidationException("Financial goal is already archived.");
+            }
+            if (remainingAllocateAmount < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(remainingAllocateAmount),
+                    "Remaining allocated amount cannot be negative.");
+            }
+            if (remainingAllocateAmount > 0)
+            {
+                throw new ValidationException(
+                    "Cannot archive the financial goal with remaining allocated amount.");
+            }
             IsArchived = true;
         }
     }

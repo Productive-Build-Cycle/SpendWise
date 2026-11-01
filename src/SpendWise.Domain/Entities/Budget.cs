@@ -1,7 +1,5 @@
 ﻿using SpendWise.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using SpendWise.Domain.Exceptions;
 
 namespace SpendWise.Domain.Entities
 {
@@ -31,11 +29,11 @@ namespace SpendWise.Domain.Entities
             }
             if (amount <= 0)
             {
-                throw new ArgumentException("Amount must be a positive value.", nameof(amount));
+                throw new ValidationException("Amount must be a positive value." );
             }
             if (startDate >= endDate)
             {
-                throw new ArgumentException("Start date must be before end date.", nameof(startDate));
+                throw new ValidationException("Start date must be before end date.");
             }
             UserId = userId;
             CategoryId = categoryId;
