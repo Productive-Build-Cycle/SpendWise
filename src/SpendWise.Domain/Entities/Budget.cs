@@ -1,5 +1,6 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Exceptions;
+using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Domain.Entities
 {
@@ -9,13 +10,15 @@ namespace SpendWise.Domain.Entities
         public User User { get; private set; } = null!;
         public Guid CategoryId { get; private set; }
         public Category Category { get; private set; } = null!;
-        public decimal Amount { get; private set; }
+        public Money Amount { get; private set; }
         public DateOnly StartDate { get; private set; }
         public DateOnly EndDate { get; private set; }
-        private Budget() { }
+        private Budget()
+        { Amount = null!; 
+        }
         public Budget(Guid userId,
                        Guid categoryId,
-                       decimal amount,
+                       Money amount,
                        DateOnly startDate,
                        DateOnly endDate)
         {
@@ -27,7 +30,8 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("Category ID cannot be empty.", nameof(categoryId));
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(amount, nameof(amount));
+            if (amount.Amount <= 0)
             {
                 throw new ValidationException("Amount must be a positive value." );
             }

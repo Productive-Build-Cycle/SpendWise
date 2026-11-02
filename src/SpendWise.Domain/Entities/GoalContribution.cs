@@ -1,5 +1,6 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Exceptions;
+using SpendWise.Domain.ValueObjects;
 
 
 namespace SpendWise.Domain.Entities
@@ -9,7 +10,7 @@ namespace SpendWise.Domain.Entities
        
         public Guid FinancialGoalId { get;private set; }
         public FinancialGoal FinancialGoal { get; private set; } = null!;
-        public decimal ContributionAmount { get; private set; }
+        public Money ContributionAmount { get; private set; }
         public DateOnly ContributionDate { get; private set; }
         public Guid AccountId { get; private set; }
         public Account Account { get; private set; } = null!;
@@ -23,9 +24,10 @@ namespace SpendWise.Domain.Entities
 
         private GoalContribution()
         {
+            ContributionAmount = null!;
         }
         public GoalContribution(Guid financialGoalId,
-                                decimal contributionAmount,
+                                Money contributionAmount,
                                 DateOnly contributionDate,
                                 Guid accountId,
                                 Guid? transactionId = null)
@@ -39,9 +41,14 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("Financial goal ID cannot be empty.", nameof(financialGoalId));
             }
-            if (contributionAmount <= 0)
+            ArgumentNullException.ThrowIfNull(contributionAmount, nameof(contributionAmount));
+            if (contributionAmount.Amount <= 0)
             {
                 throw new ValidationException("Contribution amount must be greater than zero.");
+            }
+            if(contributionAmount.Currency.Code != "USD")
+            {
+                throw new ValidationException("Contribution amount must be in USD.");
             }
             if (contributionDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
@@ -70,14 +77,22 @@ namespace SpendWise.Domain.Entities
                 throw new ValidationException(
                     "This release has already been added to the contribution.");
             }
-      
-            if (release.ReleaseAmount <= 0)
+            
+            ArgumentNullException.ThrowIfNull(release.ReleaseAmount, nameof(release.ReleaseAmount));
+            if(release.ReleaseAmount.Currency.Code != ContributionAmount.Currency.Code)
+            {
+                throw new ValidationException(
+                    "The release amount currency does not match the contribution amount currency.");
+            }
+            if (release.ReleaseAmount.Amount <= 0)
             {
                 throw new ValidationException(
                     "The release amount must be greater than zero.");
             }
-            decimal remainingAmount=ContributionAmount - _releases.Sum(r=>r.ReleaseAmount);
-            if (release.ReleaseAmount > remainingAmount)
+
+            decimal remainingAmount=ContributionAmount.Amount - 
+                       _releases.Sum(r=>r.ReleaseAmount.Amount);
+            if (release.ReleaseAmount.Amount > remainingAmount)
             {
                 throw new ValidationException(
                     "The release amount exceeds the remaining contribution amount.");

@@ -1,5 +1,6 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Exceptions;
+using SpendWise.Domain.ValueObjects;
 
 
 namespace SpendWise.Domain.Entities
@@ -8,7 +9,7 @@ namespace SpendWise.Domain.Entities
     {
         public Guid GoalContributionId { get;private set; }
         public GoalContribution GoalContribution { get; private set; } = null!;
-        public decimal ReleaseAmount { get; private set; }
+        public Money ReleaseAmount { get; private set; }
         public DateOnly ReleaseDate { get; private set; }
        
      
@@ -16,9 +17,10 @@ namespace SpendWise.Domain.Entities
         public Transactions? Transaction { get; private set; } 
         private GoalContributionRelease()
         {
+            ReleaseAmount = null!;
         }
         public GoalContributionRelease(Guid goalContributionId,
-                                       decimal releaseAmount,
+                                       Money releaseAmount,
                                        DateOnly releaseDate,
                                        Guid? transactionId = null)
         {
@@ -32,7 +34,13 @@ namespace SpendWise.Domain.Entities
                 throw new ArgumentException(
                     "Goal Contribution ID cannot be empty.", nameof(goalContributionId));
             }
-            if (releaseAmount <= 0)
+            ArgumentNullException.ThrowIfNull(releaseAmount, nameof(releaseAmount));
+            if(releaseAmount.Currency.Code != "USD")
+            {
+                throw new ValidationException(
+                    "Release amount must be in USD.");
+            };
+            if (releaseAmount.Amount <= 0)
             {
                 throw new ValidationException(
                     "Release amount must be greater than zero.");

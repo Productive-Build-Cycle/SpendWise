@@ -167,25 +167,8 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<byte>("AccountType")
                         .HasColumnType("tinyint");
 
-                    b.Property<decimal>("Balance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("CreditLimit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<decimal>("OpeningBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -199,13 +182,13 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Accounts", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "[Balance] >= 0");
+                            t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "[Balance_Amount] >= 0");
 
-                            t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "[CreditLimit] IS NULL OR [CreditLimit] > 0");
+                            t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "[CreditLimit_Amount] IS NULL OR [CreditLimit_Amount] > 0");
 
-                            t.HasCheckConstraint("CK_Accounts_Currency_USD", "[Currency] = 'USD'");
+                            t.HasCheckConstraint("CK_Accounts_Currency_USD", "[OpeningBalance_Currency] = 'USD' And[Balance_Currency] = 'USD' And([CreditLimit_Amount] Is Null Or[CreditLimit_Currency] = 'USD')");
 
-                            t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "[OpeningBalance] >= 0");
+                            t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "[OpeningBalance_Amount] >= 0");
                         });
                 });
 
@@ -214,9 +197,6 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -244,7 +224,7 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Budgets", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Budgets_Amount_Positive", "[Amount] > 0");
+                            t.HasCheckConstraint("CK_Budgets_Amount_Positive", "[Amount_Amount] > 0");
 
                             t.HasCheckConstraint("CK_Budgets_DateRange_Valid", "[StartDate] < [EndDate]");
                         });
@@ -300,10 +280,6 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<decimal>("TargetAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateOnly>("TargetDate")
                         .HasColumnType("date");
 
@@ -319,7 +295,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("FinancialGoals", null, t =>
                         {
-                            t.HasCheckConstraint("CK_FinancialGoals_TargetAmount_Positive", "[TargetAmount] > 0");
+                            t.HasCheckConstraint("CK_FinancialGoals_Currency_USD", "[TargetAmount_Currency] = 'USD'");
+
+                            t.HasCheckConstraint("CK_FinancialGoals_TargetAmount_Positive", "[TargetAmount_Amount] > 0");
                         });
                 });
 
@@ -331,10 +309,6 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("ContributionAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateOnly>("ContributionDate")
                         .HasColumnType("date");
@@ -361,7 +335,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("GoalContributions", null, t =>
                         {
-                            t.HasCheckConstraint("CK_GoalContributions_ContributionAmount_Positive", "[ContributionAmount] > 0");
+                            t.HasCheckConstraint("CK_GoalContributions_ContributionAmount_Positive", "[ContributionAmount_Amount] > 0");
+
+                            t.HasCheckConstraint("CK_GoalContributions_Currency_USD", "[ContributionAmount_Currency] = 'USD'");
                         });
                 });
 
@@ -376,10 +352,6 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.Property<Guid>("GoalContributionId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("ReleaseAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateOnly>("ReleaseDate")
                         .HasColumnType("date");
@@ -398,7 +370,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("GoalContributionReleases", null, t =>
                         {
-                            t.HasCheckConstraint("CK_GoalContributionReleases_ReleaseAmount_Positive", "[ReleaseAmount] > 0");
+                            t.HasCheckConstraint("CK_GoalContributionReleases_Currency_USD", "[ReleaseAmount_Currency] = 'USD'");
+
+                            t.HasCheckConstraint("CK_GoalContributionReleases_ReleaseAmount_Positive", "[ReleaseAmount_Amount] > 0");
                         });
                 });
 
@@ -407,10 +381,6 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -464,7 +434,7 @@ namespace SpendWise.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_RecurringTransactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
 
-                            t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "[Amount] > 0");
+                            t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "[Amount_Amount] > 0");
 
                             t.HasCheckConstraint("CK_RecurringTransactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
 
@@ -477,10 +447,6 @@ namespace SpendWise.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
@@ -519,7 +485,7 @@ namespace SpendWise.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_Transactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
 
-                            t.HasCheckConstraint("CK_Transactions_Amount_Positive", "[Amount] > 0");
+                            t.HasCheckConstraint("CK_Transactions_Amount_Positive", "[Amount_Amount] > 0");
 
                             t.HasCheckConstraint("CK_Transactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
                         });
@@ -735,6 +701,86 @@ namespace SpendWise.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Balance", b1 =>
+                        {
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Balance_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Balance_Currency");
+
+                            b1.HasKey("AccountId");
+
+                            b1.ToTable("Accounts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountId");
+                        });
+
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "CreditLimit", b1 =>
+                        {
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("CreditLimit_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("CreditLimit_Currency");
+
+                            b1.HasKey("AccountId");
+
+                            b1.ToTable("Accounts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountId");
+                        });
+
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "OpeningBalance", b1 =>
+                        {
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("OpeningBalance_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("OpeningBalance_Currency");
+
+                            b1.HasKey("AccountId");
+
+                            b1.ToTable("Accounts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountId");
+                        });
+
+                    b.Navigation("Balance")
+                        .IsRequired();
+
+                    b.Navigation("CreditLimit");
+
+                    b.Navigation("OpeningBalance")
+                        .IsRequired();
+
                     b.Navigation("User");
                 });
 
@@ -750,6 +796,33 @@ namespace SpendWise.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("BudgetId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Amount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Amount_Currency");
+
+                            b1.HasKey("BudgetId");
+
+                            b1.ToTable("Budgets");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BudgetId");
+                        });
+
+                    b.Navigation("Amount")
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -776,6 +849,33 @@ namespace SpendWise.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "TargetAmount", b1 =>
+                        {
+                            b1.Property<Guid>("FinancialGoalId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("TargetAmount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("TargetAmount_Currency");
+
+                            b1.HasKey("FinancialGoalId");
+
+                            b1.ToTable("FinancialGoals");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FinancialGoalId");
+                        });
+
+                    b.Navigation("TargetAmount")
+                        .IsRequired();
+
                     b.Navigation("User");
                 });
 
@@ -798,7 +898,34 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "ContributionAmount", b1 =>
+                        {
+                            b1.Property<Guid>("GoalContributionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("ContributionAmount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("ContributionAmount_Currency");
+
+                            b1.HasKey("GoalContributionId");
+
+                            b1.ToTable("GoalContributions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GoalContributionId");
+                        });
+
                     b.Navigation("Account");
+
+                    b.Navigation("ContributionAmount")
+                        .IsRequired();
 
                     b.Navigation("FinancialGoal");
 
@@ -818,7 +945,34 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "ReleaseAmount", b1 =>
+                        {
+                            b1.Property<Guid>("GoalContributionReleaseId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("ReleaseAmount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("ReleaseAmount_Currency");
+
+                            b1.HasKey("GoalContributionReleaseId");
+
+                            b1.ToTable("GoalContributionReleases");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GoalContributionReleaseId");
+                        });
+
                     b.Navigation("GoalContribution");
+
+                    b.Navigation("ReleaseAmount")
+                        .IsRequired();
 
                     b.Navigation("Transaction");
                 });
@@ -846,6 +1000,33 @@ namespace SpendWise.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("RecurringTransactionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Amount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Amount_Currency");
+
+                            b1.HasKey("RecurringTransactionId");
+
+                            b1.ToTable("RecurringTransactions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RecurringTransactionId");
+                        });
+
+                    b.Navigation("Amount")
+                        .IsRequired();
+
                     b.Navigation("Category");
 
                     b.Navigation("DestinationAccount");
@@ -871,6 +1052,33 @@ namespace SpendWise.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("TransactionsId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Amount_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Amount_Currency");
+
+                            b1.HasKey("TransactionsId");
+
+                            b1.ToTable("Transactions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TransactionsId");
+                        });
+
+                    b.Navigation("Amount")
                         .IsRequired();
 
                     b.Navigation("DestinationAccount");

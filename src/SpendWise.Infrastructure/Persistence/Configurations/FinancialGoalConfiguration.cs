@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SpendWise.Domain.Entities;
+using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Infrastructure.Persistence.Configurations
 {
@@ -12,7 +13,10 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
             {
                 table.HasCheckConstraint(
                     "CK_FinancialGoals_TargetAmount_Positive",
-                    "[TargetAmount] > 0");
+                    "[TargetAmount_Amount] > 0");
+                table.HasCheckConstraint(
+                    "CK_FinancialGoals_Currency_USD",
+                    "[TargetAmount_Currency] = 'USD'");
             });
 
             builder.HasKey(goal => goal.Id);
@@ -26,11 +30,22 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                    .HasMaxLength(100)
                    .IsRequired();
 
-            builder.Property(goal => goal.TargetAmount)
-                   .HasPrecision(18, 2)
-                   .IsRequired();
+           builder.OwnsOne(goal => goal.TargetAmount, money =>
+            {
+                money.Property(m => m.Amount)
+                     .HasColumnName("TargetAmount_Amount")
+                     .HasPrecision(18, 2)
+                     .IsRequired();
+                money.Property(m => m.Currency)
+                     .HasConversion(
+                        currency => currency.Code,
+                        code => new Currency(code))
+                     .HasColumnName("TargetAmount_Currency")
+                     .HasMaxLength(3)
+                     .IsRequired();
+            });
 
-           
+
             builder.Property(goal => goal.TargetDate)
                    .HasColumnType("date")
                    .IsRequired();

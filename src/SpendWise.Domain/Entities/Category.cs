@@ -18,13 +18,13 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            categoryName = categoryName?.Trim();
 
             if (string.IsNullOrWhiteSpace(categoryName))
             {
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(categoryName));
             }
-            if(categoryName.Length > 100)
+            categoryName = categoryName.Trim();
+            if (categoryName.Length > 100)
             {
                 throw new ValidationException("Category name cannot exceed 100 characters.");
             }
