@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SpendWise.Domain.Entities;
+using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Infrastructure.Persistence.Configurations
 {
@@ -12,7 +13,7 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
             {
                 table.HasCheckConstraint(
                     "CK_Budgets_Amount_Positive",
-                    "[Amount] > 0");
+                    "[Amount_Amount] > 0");
 
                 table.HasCheckConstraint(
                     "CK_Budgets_DateRange_Valid",
@@ -27,9 +28,20 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
           
-            builder.Property(budget => budget.Amount)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
+            builder.OwnsOne(budget => budget.Amount, money =>
+            {
+                money.Property(m => m.Amount)
+                     .HasColumnName("Amount_Amount")
+                     .HasPrecision(18, 2)
+                     .IsRequired();
+                money.Property(m => m.Currency)
+                     .HasConversion(
+                        currency => currency.Code,
+                        code => new Currency(code))
+                     .HasColumnName("Amount_Currency")
+                     .HasMaxLength(3)
+                     .IsRequired();
+            });
 
             builder.Property(budget => budget.StartDate)
                    .HasColumnType("date")

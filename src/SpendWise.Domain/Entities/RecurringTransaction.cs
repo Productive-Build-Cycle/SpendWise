@@ -1,6 +1,7 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Enums;
 using SpendWise.Domain.Exceptions;
+using SpendWise.Domain.ValueObjects;
 
 
 
@@ -11,7 +12,7 @@ namespace SpendWise.Domain.Entities
         public Guid UserId { get;private set; }
         public User User { get; private set; } = null!;
         public string TransactionName { get; private set; } = string.Empty;
-        public decimal Amount { get; private set; }
+        public Money Amount { get; private set; }
         public Guid? SourceAccountId { get; private set; }
         public Account? SourceAccount { get; private set; } 
         public Guid? DestinationAccountId { get; private set; }
@@ -26,10 +27,11 @@ namespace SpendWise.Domain.Entities
         public RecurringFrequency Frequency { get; private set; }
         private RecurringTransaction()
         {
+            Amount= null!;
         }
         public RecurringTransaction(Guid userId,
                                     string transactionName,
-                                    decimal amount,
+                                    Money amount,
                                     Guid? sourceAccountId,
                                     Guid? destinationAccountId,
                                     TransactionTypes transactionType,
@@ -76,7 +78,7 @@ namespace SpendWise.Domain.Entities
 
         private static void ValidateSchedule(
                         string transactionName,
-                        decimal amount,
+                        Money amount,
                         Guid? sourceAccountId,
                         Guid? destinationAccountId,
                         TransactionTypes transactionType,
@@ -119,7 +121,8 @@ namespace SpendWise.Domain.Entities
                 throw new ValidationException(
                     "Transaction name cannot exceed 100 characters.");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(amount, nameof(amount));
+            if (amount.Amount <= 0)
             {
                 throw new ValidationException(
                    "Amount must be greater than zero.");
@@ -216,7 +219,7 @@ namespace SpendWise.Domain.Entities
             Guid? destinationAccountId,
             TransactionTypes transactionType,
             Guid? categoryId,
-            decimal amount,
+            Money amount,
             DateTime? endDate,
             RecurringFrequency frequency
             )

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SpendWise.Domain.Entities;
+using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Infrastructure.Persistence.Configurations
 {
@@ -12,7 +13,10 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
             {
                 table.HasCheckConstraint(
                     "CK_GoalContributions_ContributionAmount_Positive",
-                    "[ContributionAmount] > 0");
+                    "[ContributionAmount_Amount] > 0");
+                table.HasCheckConstraint(
+                    "CK_GoalContributions_Currency_USD",
+                    "[ContributionAmount_Currency] = 'USD'");
             });
 
             builder.HasKey(gc => gc.Id);
@@ -21,9 +25,20 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
                    .HasForeignKey(gc => gc.FinancialGoalId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property(gc => gc.ContributionAmount)
-                   .HasPrecision(18, 2)
-                   .IsRequired();
+            builder.OwnsOne(gc => gc.ContributionAmount, money =>
+            {
+                money.Property(m => m.Amount)
+                     .HasColumnName("ContributionAmount_Amount")
+                     .HasPrecision(18, 2)
+                     .IsRequired();
+                money.Property(m => m.Currency)
+                     .HasConversion(
+                        currency => currency.Code,
+                        code => new Currency(code))
+                     .HasColumnName("ContributionAmount_Currency")
+                     .HasMaxLength(3)
+                     .IsRequired();
+            });
 
             builder.Property(gc => gc.ContributionDate)
                    .HasColumnType("date")

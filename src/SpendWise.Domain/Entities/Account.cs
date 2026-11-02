@@ -2,6 +2,7 @@
 using SpendWise.Domain.Enums;
 using SpendWise.Domain.Exceptions;
 using SpendWise.Domain.ValueObjects;
+using System.Net;
 
 namespace SpendWise.Domain.Entities
 {
@@ -18,19 +19,18 @@ namespace SpendWise.Domain.Entities
         /// for credit cards it represents outstanding debt.
         /// must be zero or positive.   
         /// </summary>
-        public decimal OpeningBalance { get; private set; }
+        public Money OpeningBalance { get; private set; }
         /// <summary>
         /// the current financial position for this account
         /// for bank accounts it represents available funds.
         /// for credit cards.it represents outstanding debt.
         /// must be zero or positive.
         /// </summary>
-        public decimal Balance { get; private set; }
-        public Currency Currency { get; private set; } = null!;
+        public Money Balance { get; private set; }
 
         private const string SupportedCurrencyCode = "USD";
 
-        public decimal? CreditLimit { get; private set; }
+        public Money? CreditLimit { get; private set; }
 
         public ICollection<Transactions> SourceTransactions { get; private set; }
                                         = new List<Transactions>();
@@ -39,14 +39,15 @@ namespace SpendWise.Domain.Entities
 
         private Account()
         {
+            OpeningBalance = null!;
+            Balance = null!;
         }
 
         public Account(Guid userId,
                        string accountName,
                        AccountType accountType,
-                      decimal openingBalance,
-                       Currency currency,
-                       decimal? creditLimit=null)
+                       Money openingBalance,
+                       Money? creditLimit=null)
         {
             if(userId == Guid.Empty)
             {
@@ -62,18 +63,18 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ValidationException("Account name cannot exceed 100 characters.");
             }
-            if ( openingBalance< 0)
-            {
-                throw new ValidationException
-                    ("Opening balance cannot be negative");
-            }
 
-            ArgumentNullException.ThrowIfNull(currency);
-
-            if (currency.Code != SupportedCurrencyCode)
+            ArgumentNullException.ThrowIfNull(openingBalance);
+            if (openingBalance.Amount < 0)
             {
                 throw new ValidationException(
-                    $"Only {SupportedCurrencyCode} currency is supported in this version.");
+                    "Opening balance cannot be negative.");
+            }
+
+           if(openingBalance.Currency.Code != SupportedCurrencyCode)
+            {
+                throw new ValidationException(
+                    $"only {SupportedCurrencyCode} currency is supported in this version.");
             }
 
 
@@ -83,41 +84,48 @@ namespace SpendWise.Domain.Entities
                     "Invalid account type.",
                     nameof(accountType));
             }
-           if (accountType == AccountType.CreditCard && creditLimit is null)
+            if (accountType != AccountType.CreditCard && 
+                 creditLimit is not null)
+            {
+                throw new ValidationException(
+                    "creditLimit should only be  provided for credit card accounts.");
+            }
+            if (accountType == AccountType.CreditCard && creditLimit is null)
             {
                 throw new ValidationException(
                     "Credit limit must be provided for credit card accounts." );
             }
-           if(accountType==AccountType.CreditCard &&
-                creditLimit.HasValue && creditLimit.Value <= 0)
+           if(creditLimit is not null &&
+                creditLimit.Currency.Code != openingBalance.Currency.Code)
             {
                 throw new ValidationException(
-                    "Credit limit must be greater than zero for credit card accounts.");
+                    $"Credit limit must have the same currency as the opening balance.");
             }
-          if (accountType == AccountType.CreditCard &&
-                creditLimit.HasValue &&
-                openingBalance > creditLimit.Value)
+          if (accountType==AccountType.CreditCard &&
+                creditLimit is not null &&
+                 openingBalance.Amount> creditLimit.Amount)
             {
                 throw new ValidationException(
-                    "Opening balance cannot exceed credit limit for credit card accounts.");
+                    "Opening balance cannot exceed the credit limit for credit card accounts.");
             }
-          if (accountType!=AccountType.CreditCard
-                && creditLimit.HasValue)
+          if(accountType==AccountType.CreditCard &&
+                creditLimit is not null &&
+                creditLimit.Amount <= 0)
             {
                 throw new ValidationException(
-                    "Credit limit should only be provided for credit card accounts."  );
+                    "Credit limit must be a positive value for credit card accounts.");
             }
             UserId = userId;
             AccountName = accountName;
             AccountType = accountType;
             OpeningBalance = openingBalance;
             Balance = openingBalance;
-            Currency = currency;
+           
             CreditLimit = creditLimit;
         }
         
         //..................................................................
-        public void Deposit(decimal amount)
+        public void Deposit(Money deposit)
         {
             if (AccountType != AccountType.Chequing &&
                 AccountType != AccountType.Savings &&
@@ -128,15 +136,21 @@ namespace SpendWise.Domain.Entities
                 throw new ValidationException(
                     "Deposits are not supported for this account type.");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(deposit);
+            if (deposit.Amount <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(amount),
+                throw new ValidationException(
                     "Deposit amount must be greater than zero.");
             }
-          Balance += amount;
+            if(deposit.Currency != Balance.Currency)
+            {
+                throw new ValidationException(
+                    "Deposit currency must match the account currency.");
+            }
+          Balance = Balance.Add(deposit);
         }
         //..................................................................
-        public void Withdraw(decimal amount)
+        public void Withdraw(Money withdrawal)
         {
             if (AccountType != AccountType.Chequing &&
                AccountType != AccountType.Savings &&
@@ -147,58 +161,78 @@ namespace SpendWise.Domain.Entities
                 throw new ValidationException(
                           "Withdrawals are not supported for this account type");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(withdrawal);
+            if (withdrawal.Amount <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(amount),
+                throw new ValidationException(
                     "Withdrawal amount must be greater than zero.");
             }
-            if (amount >Balance)
+            if (withdrawal.Currency != Balance.Currency)
+            {
+                throw new ValidationException(
+                    "Withdrawal currency must match the account currency.");
+            }
+            if (withdrawal.Amount > Balance.Amount)
             {
                 throw new ValidationException(
                     "Insufficient funds for this withdrawal.");
             }
-            Balance-= amount;
+            
+            Balance = Balance.Subtract(withdrawal);
         }
         //..................................................................
-        public void PayCreditCard(decimal amount)
+        public void PayCreditCard(Money payment)
         {
             if (AccountType != AccountType.CreditCard)
             {
                 throw new ValidationException(
                     "Payments are only allowed for credit card accounts.");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(payment);
+            if(payment.Currency != Balance.Currency)
             {
-                throw new ArgumentOutOfRangeException(nameof(amount),
+                throw new ValidationException(
+                    "Payment currency must match the account currency.");
+            }
+            if (payment.Amount <= 0)
+            {
+                throw new ValidationException(
                     "Payment amount must be greater than zero.");
             }
-            if(amount>Balance)
+           
+            if(payment.Amount > Balance.Amount)
             {
                 throw new ValidationException(
                     "Payment amount exceeds the outstanding balance.");
             }
-            Balance -= amount;
+            Balance = Balance.Subtract(payment);
         }
         //..................................................................
-        public void MakeCreditCardPurchase(decimal amount)
+        public void MakeCreditCardPurchase(Money purchase)
         {
             if (AccountType != AccountType.CreditCard)
             {
                 throw new ValidationException(
                     "Purchases are only allowed for credit card accounts.");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(purchase);
+            if(purchase.Currency != Balance.Currency)
             {
-                throw new ArgumentOutOfRangeException(nameof(amount),
+                throw new ValidationException(
+                    "Purchase currency must match the account currency.");
+            }
+            if (purchase.Amount <= 0)
+            {
+                throw new ValidationException(
                     "Purchase amount must be greater than zero.");
             }
            
-            if (amount+Balance>CreditLimit!.Value)
+            if (purchase.Amount+Balance.Amount>CreditLimit!.Amount)
             {
                 throw new ValidationException(
                     "Purchase amount exceeds the credit limit.");
             }
-            Balance += amount;
+            Balance =Balance.Add(purchase);
         }
     }
 }

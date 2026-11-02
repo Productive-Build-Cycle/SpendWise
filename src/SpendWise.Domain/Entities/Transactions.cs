@@ -1,7 +1,7 @@
 ﻿using SpendWise.Domain.Common;
 using SpendWise.Domain.Enums;
 using SpendWise.Domain.Exceptions;
-
+using SpendWise.Domain.ValueObjects;
 
 
 namespace SpendWise.Domain.Entities
@@ -18,8 +18,8 @@ namespace SpendWise.Domain.Entities
 
         public Guid UserId { get; private set; }
         public User User { get; private set; } = null!;
-       
-        public decimal Amount { get; private set; }
+
+        public Money Amount { get; private set; } = null!;
         public string? Description { get; private set; } 
         public DateTime TransactionDate { get; private  set; } // The date and time when the transaction occurred.It is not the date and time when the transaction was created in the system.
 
@@ -31,7 +31,7 @@ namespace SpendWise.Domain.Entities
                             Guid? destinationAccountId,
                             TransactionTypes transactionType,
                             Guid userId,
-                            decimal amount,
+                            Money amount,
                             string? description,
                             DateTime transactionDate)
         {
@@ -57,7 +57,8 @@ namespace SpendWise.Domain.Entities
                 throw new ValidationException(
                     "At least one account must be provided.");
             }
-            if (amount <= 0)
+            ArgumentNullException.ThrowIfNull(amount, nameof(amount));
+            if (amount.Amount <= 0)
             {
                 throw new ValidationException(
                    "Amount must be greater than zero." );
@@ -111,6 +112,7 @@ namespace SpendWise.Domain.Entities
                     throw new ValidationException(
                         "Invalid transaction type.");
             }
+           
             SourceAccountId = sourceAccountId;
             DestinationAccountId = destinationAccountId;
             TransactionType = transactionType;
