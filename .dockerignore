@@ -1,0 +1,8 @@
+# Ignore generated build output and Git metadata
+.git
+.github
+**/bin/
+**/obj/
+.vscode/
+*.user
+*.suo

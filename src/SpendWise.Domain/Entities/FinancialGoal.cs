@@ -90,17 +90,22 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ValidationException("Financial goal is already archived.");
             }
+
+            ArgumentNullException.ThrowIfNull(remainingAllocateAmount);
+
             if (remainingAllocateAmount.Amount < 0)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(remainingAllocateAmount),
                     "Remaining allocated amount cannot be negative.");
             }
+
             if (remainingAllocateAmount.Amount > 0)
             {
                 throw new ValidationException(
                     "Cannot archive the financial goal with remaining allocated amount.");
             }
+
             IsArchived = true;
         }
     }
