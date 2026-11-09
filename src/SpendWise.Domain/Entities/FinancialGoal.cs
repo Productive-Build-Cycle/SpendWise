@@ -84,19 +84,19 @@ namespace SpendWise.Domain.Entities
 
             _contributions.Add(contribution);
         }
-        public void Archive(decimal remainingAllocateAmount)
+        public void Archive(Money remainingAllocateAmount)
         {
             if (IsArchived)
             {
                 throw new ValidationException("Financial goal is already archived.");
             }
-            if (remainingAllocateAmount < 0)
+            if (remainingAllocateAmount.Amount < 0)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(remainingAllocateAmount),
                     "Remaining allocated amount cannot be negative.");
             }
-            if (remainingAllocateAmount > 0)
+            if (remainingAllocateAmount.Amount > 0)
             {
                 throw new ValidationException(
                     "Cannot archive the financial goal with remaining allocated amount.");

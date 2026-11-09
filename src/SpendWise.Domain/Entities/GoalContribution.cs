@@ -21,6 +21,11 @@ namespace SpendWise.Domain.Entities
 
         public IReadOnlyCollection<GoalContributionRelease> Releases => _releases.AsReadOnly();
 
+        public Money RemainingAmount => new Money(
+               ContributionAmount.Amount - _releases.Sum(r => r.ReleaseAmount.Amount),
+               ContributionAmount.Currency
+            );
+
 
         private GoalContribution()
         {
@@ -90,9 +95,7 @@ namespace SpendWise.Domain.Entities
                     "The release amount must be greater than zero.");
             }
 
-            decimal remainingAmount=ContributionAmount.Amount - 
-                       _releases.Sum(r=>r.ReleaseAmount.Amount);
-            if (release.ReleaseAmount.Amount > remainingAmount)
+            if (release.ReleaseAmount.Amount > RemainingAmount.Amount)
             {
                 throw new ValidationException(
                     "The release amount exceeds the remaining contribution amount.");
