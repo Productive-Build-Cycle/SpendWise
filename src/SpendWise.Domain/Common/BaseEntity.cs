@@ -1,4 +1,4 @@
-namespace SpendWise.Domain.Common;
+﻿namespace SpendWise.Domain.Common;
 
 // Base class for all entities. Audit timestamps are set automatically by ApplicationDbContext.
 public abstract class BaseEntity

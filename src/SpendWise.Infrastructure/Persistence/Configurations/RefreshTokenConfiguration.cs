@@ -14,29 +14,28 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.HasKey(token => token.Id);
 
         builder.Property(token => token.TokenHash)
-            .HasColumnType("char(64)")
-            .IsUnicode(false)
+            .HasMaxLength(64)
             .IsRequired();
 
         builder.Property(token => token.FamilyId)
             .IsRequired();
 
         builder.Property(token => token.CreatedAtUtc)
-            .HasColumnType("datetime2")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         builder.Property(token => token.ExpiresAtUtc)
-            .HasColumnType("datetime2")
+            .HasColumnType("timestamp with time zone")
             .IsRequired();
 
         builder.Property(token => token.RevokedAtUtc)
-            .HasColumnType("datetime2");
+            .HasColumnType("timestamp with time zone");
 
         builder.Property(token => token.RevocationReason)
-            .HasConversion<byte>()
-            .HasColumnType("tinyint");
+            .HasConversion<short>()
+            .HasColumnType("smallint");
 
-        builder.Property(token => token.RowVersion)
+        builder.Property(token => token.Version)
             .IsRowVersion();
 
         builder.HasIndex(token => token.TokenHash)
