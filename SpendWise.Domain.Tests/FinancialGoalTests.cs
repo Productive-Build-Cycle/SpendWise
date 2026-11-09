@@ -100,5 +100,22 @@ namespace SpendWise.Domain.Tests
             // Act & Assert
             Assert.Throws<ValidationException>(() => goal.Archive(remainingAmount));
         }
+        [Fact]
+        public void Archive_WithRemainingAmount_ThrowsValidationException()
+        {
+            // Arrange
+            var goal = new FinancialGoal(
+                Guid.NewGuid(),
+                "Buy a car",
+                new Money(10000, new Currency("USD")),
+                DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))
+            );
+
+            var remainingAmount = new Money(500, new Currency("USD"));
+
+            // Act & Assert
+            Assert.Throws<ValidationException>(
+                () => goal.Archive(remainingAmount));
+        }
     }
 }
