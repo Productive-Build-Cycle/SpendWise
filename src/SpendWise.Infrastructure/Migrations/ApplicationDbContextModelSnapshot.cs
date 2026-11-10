@@ -2,8 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SpendWise.Infrastructure.Persistence;
 
 #nullable disable
@@ -17,35 +17,34 @@ namespace SpendWise.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -54,18 +53,18 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -78,18 +77,18 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -101,16 +100,16 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -122,10 +121,10 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -137,16 +136,16 @@ namespace SpendWise.Infrastructure.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -157,24 +156,24 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AccountName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<byte>("AccountType")
-                        .HasColumnType("tinyint");
+                    b.Property<short>("AccountType")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -182,13 +181,13 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Accounts", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "[Balance_Amount] >= 0");
+                            t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "\"Balance_Amount\" >= 0");
 
-                            t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "[CreditLimit_Amount] IS NULL OR [CreditLimit_Amount] > 0");
+                            t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "\"CreditLimit_Amount\" IS NULL OR \"CreditLimit_Amount\" > 0");
 
-                            t.HasCheckConstraint("CK_Accounts_Currency_USD", "[OpeningBalance_Currency] = 'USD' And[Balance_Currency] = 'USD' And([CreditLimit_Amount] Is Null Or[CreditLimit_Currency] = 'USD')");
+                            t.HasCheckConstraint("CK_Accounts_Currency_USD", "\"OpeningBalance_Currency\" = 'USD'\r\nAND \"Balance_Currency\" = 'USD'\r\nAND\r\n(\r\n    (\"CreditLimit_Amount\" IS NULL AND \"CreditLimit_Currency\" IS NULL)\r\n    OR\r\n    (\"CreditLimit_Amount\" IS NOT NULL AND \"CreditLimit_Currency\" = 'USD')\r\n)");
 
-                            t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "[OpeningBalance_Amount] >= 0");
+                            t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "\"OpeningBalance_Amount\" >= 0");
                         });
                 });
 
@@ -196,13 +195,13 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
@@ -211,10 +210,10 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasColumnType("date");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -224,9 +223,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Budgets", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Budgets_Amount_Positive", "[Amount_Amount] > 0");
+                            t.HasCheckConstraint("CK_Budgets_Amount_Positive", "\"Amount_Amount\" > 0");
 
-                            t.HasCheckConstraint("CK_Budgets_DateRange_Valid", "[StartDate] < [EndDate]");
+                            t.HasCheckConstraint("CK_Budgets_DateRange_Valid", "\"StartDate\" < \"EndDate\"");
                         });
                 });
 
@@ -234,25 +233,25 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -265,29 +264,29 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("GoalName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsArchived")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
                     b.Property<DateOnly>("TargetDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -295,9 +294,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("FinancialGoals", null, t =>
                         {
-                            t.HasCheckConstraint("CK_FinancialGoals_Currency_USD", "[TargetAmount_Currency] = 'USD'");
+                            t.HasCheckConstraint("CK_FinancialGoals_Currency_USD", "\"TargetAmount_Currency\" = 'USD'");
 
-                            t.HasCheckConstraint("CK_FinancialGoals_TargetAmount_Positive", "[TargetAmount_Amount] > 0");
+                            t.HasCheckConstraint("CK_FinancialGoals_TargetAmount_Positive", "\"TargetAmount_Amount\" > 0");
                         });
                 });
 
@@ -305,25 +304,25 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("ContributionDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("FinancialGoalId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("TransactionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -335,9 +334,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("GoalContributions", null, t =>
                         {
-                            t.HasCheckConstraint("CK_GoalContributions_ContributionAmount_Positive", "[ContributionAmount_Amount] > 0");
+                            t.HasCheckConstraint("CK_GoalContributions_ContributionAmount_Positive", "\"ContributionAmount_Amount\" > 0");
 
-                            t.HasCheckConstraint("CK_GoalContributions_Currency_USD", "[ContributionAmount_Currency] = 'USD'");
+                            t.HasCheckConstraint("CK_GoalContributions_Currency_USD", "\"ContributionAmount_Currency\" = 'USD'");
                         });
                 });
 
@@ -345,22 +344,22 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("GoalContributionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("ReleaseDate")
                         .HasColumnType("date");
 
                     b.Property<Guid?>("TransactionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -370,9 +369,9 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("GoalContributionReleases", null, t =>
                         {
-                            t.HasCheckConstraint("CK_GoalContributionReleases_Currency_USD", "[ReleaseAmount_Currency] = 'USD'");
+                            t.HasCheckConstraint("CK_GoalContributionReleases_Currency_USD", "\"ReleaseAmount_Currency\" = 'USD'");
 
-                            t.HasCheckConstraint("CK_GoalContributionReleases_ReleaseAmount_Positive", "[ReleaseAmount_Amount] > 0");
+                            t.HasCheckConstraint("CK_GoalContributionReleases_ReleaseAmount_Positive", "\"ReleaseAmount_Amount\" > 0");
                         });
                 });
 
@@ -380,45 +379,45 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("DestinationAccountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<byte>("Frequency")
-                        .HasColumnType("tinyint");
+                    b.Property<short>("Frequency")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("NextOccurrenceDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("SourceAccountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TransactionName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<byte>("TransactionType")
-                        .HasColumnType("tinyint");
+                    b.Property<short>("TransactionType")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -432,13 +431,13 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("RecurringTransactions", null, t =>
                         {
-                            t.HasCheckConstraint("CK_RecurringTransactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
+                            t.HasCheckConstraint("CK_RecurringTransactions_AccountCombination", "(\"TransactionType\" = 1\r\n    AND \"SourceAccountId\" IS NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 2\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NULL)\r\nOR\r\n(\"TransactionType\" = 3\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)");
 
-                            t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "[Amount_Amount] > 0");
+                            t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "\"Amount_Amount\" > 0");
 
-                            t.HasCheckConstraint("CK_RecurringTransactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
+                            t.HasCheckConstraint("CK_RecurringTransactions_DifferentAccounts", "\"SourceAccountId\" IS NULL\r\nOR \"DestinationAccountId\" IS NULL\r\nOR \"SourceAccountId\" <> \"DestinationAccountId\"");
 
-                            t.HasCheckConstraint("CK_RecurringTransactions_ValidDates", "[StartDate] <= [NextOccurrenceDate] AND ([EndDate] IS NULL OR ([EndDate] >= [StartDate] AND [NextOccurrenceDate] <= [EndDate]))");
+                            t.HasCheckConstraint("CK_RecurringTransactions_ValidDates", "\"StartDate\" <= \"NextOccurrenceDate\"\r\nAND\r\n(\r\n    \"EndDate\" IS NULL\r\n    OR\r\n    (\r\n        \"EndDate\" >= \"StartDate\"\r\n        AND \"NextOccurrenceDate\" <= \"EndDate\"\r\n    )\r\n)");
                         });
                 });
 
@@ -446,32 +445,32 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid?>("DestinationAccountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("SourceAccountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<byte>("TransactionType")
-                        .HasColumnType("tinyint");
+                    b.Property<short>("TransactionType")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -483,11 +482,11 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Transactions", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Transactions_AccountCombination", "([TransactionType] = 1 AND [SourceAccountId] IS NULL AND [DestinationAccountId] IS NOT NULL) OR ([TransactionType] = 2 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NULL) OR ([TransactionType] = 3 AND [SourceAccountId] IS NOT NULL AND [DestinationAccountId] IS NOT NULL)");
+                            t.HasCheckConstraint("CK_Transactions_AccountCombination", "(\"TransactionType\" = 1\r\n    AND \"SourceAccountId\" IS NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 2\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NULL)\r\nOR\r\n(\"TransactionType\" = 3\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)");
 
-                            t.HasCheckConstraint("CK_Transactions_Amount_Positive", "[Amount_Amount] > 0");
+                            t.HasCheckConstraint("CK_Transactions_Amount_Positive", "\"Amount_Amount\" > 0");
 
-                            t.HasCheckConstraint("CK_Transactions_DifferentAccounts", "[SourceAccountId] IS NULL OR [DestinationAccountId] IS NULL OR [SourceAccountId] <> [DestinationAccountId]");
+                            t.HasCheckConstraint("CK_Transactions_DifferentAccounts", "\"SourceAccountId\" IS NULL\r\nOR \"DestinationAccountId\" IS NULL\r\nOR \"SourceAccountId\" <> \"DestinationAccountId\"");
                         });
                 });
 
@@ -495,23 +494,23 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -522,39 +521,39 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("FamilyId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("ReplacedByTokenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<byte?>("RevocationReason")
-                        .HasColumnType("tinyint");
+                    b.Property<short?>("RevocationReason")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime?>("RevokedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TokenHash")
                         .IsRequired()
-                        .IsUnicode(false)
-                        .HasColumnType("char(64)");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 
@@ -580,54 +579,54 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
@@ -636,8 +635,7 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -704,17 +702,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Balance", b1 =>
                         {
                             b1.Property<Guid>("AccountId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("Balance_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("Balance_Currency");
 
                             b1.HasKey("AccountId");
@@ -728,17 +726,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "CreditLimit", b1 =>
                         {
                             b1.Property<Guid>("AccountId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("CreditLimit_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("CreditLimit_Currency");
 
                             b1.HasKey("AccountId");
@@ -752,17 +750,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "OpeningBalance", b1 =>
                         {
                             b1.Property<Guid>("AccountId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("OpeningBalance_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("OpeningBalance_Currency");
 
                             b1.HasKey("AccountId");
@@ -801,17 +799,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("BudgetId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("Amount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("Amount_Currency");
 
                             b1.HasKey("BudgetId");
@@ -852,17 +850,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "TargetAmount", b1 =>
                         {
                             b1.Property<Guid>("FinancialGoalId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("TargetAmount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("TargetAmount_Currency");
 
                             b1.HasKey("FinancialGoalId");
@@ -901,17 +899,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "ContributionAmount", b1 =>
                         {
                             b1.Property<Guid>("GoalContributionId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("ContributionAmount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("ContributionAmount_Currency");
 
                             b1.HasKey("GoalContributionId");
@@ -948,17 +946,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "ReleaseAmount", b1 =>
                         {
                             b1.Property<Guid>("GoalContributionReleaseId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("ReleaseAmount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("ReleaseAmount_Currency");
 
                             b1.HasKey("GoalContributionReleaseId");
@@ -1003,17 +1001,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("RecurringTransactionId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("Amount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("Amount_Currency");
 
                             b1.HasKey("RecurringTransactionId");
@@ -1057,17 +1055,17 @@ namespace SpendWise.Infrastructure.Migrations
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("TransactionsId")
-                                .HasColumnType("uniqueidentifier");
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
+                                .HasColumnType("numeric(18,2)")
                                 .HasColumnName("Amount_Amount");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
                                 .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("Amount_Currency");
 
                             b1.HasKey("TransactionsId");

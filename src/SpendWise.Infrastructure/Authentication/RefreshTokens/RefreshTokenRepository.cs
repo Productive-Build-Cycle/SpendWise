@@ -22,7 +22,8 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         if (refreshToken.RevokedAtUtc.HasValue || refreshToken.ReplacedByTokenId.HasValue ||
             refreshToken.RevocationReason.HasValue)
         {
-            throw new ArgumentException("A new refresh token cannot already be revoked or replaced.", nameof(refreshToken));
+            throw new ArgumentException("A new refresh token cannot already be revoked or replaced.",
+                nameof(refreshToken));
         }
 
         var entity = new RefreshTokenEntity(
@@ -49,16 +50,14 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         if (entity is null)
             return null;
 
-        // SQL Server datetime2 does not preserve DateTime.Kind.
-        // Our database convention is that these values are stored as UTC.
         return new RefreshTokenRecord(
             entity.Id,
             entity.UserId,
             entity.TokenHash,
             entity.FamilyId,
-            DateTime.SpecifyKind(entity.CreatedAtUtc, DateTimeKind.Utc),
-            DateTime.SpecifyKind(entity.ExpiresAtUtc, DateTimeKind.Utc),
-            entity.RevokedAtUtc.HasValue ? DateTime.SpecifyKind(entity.RevokedAtUtc.Value, DateTimeKind.Utc) : null,
+            entity.CreatedAtUtc,
+            entity.ExpiresAtUtc,
+            entity.RevokedAtUtc,
             entity.ReplacedByTokenId,
             entity.RevocationReason);
     }
@@ -69,6 +68,11 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         if (tokenId == Guid.Empty)
             throw new ArgumentException("Token ID cannot be empty.", nameof(tokenId));
 
+        if (revokedAtUtc.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException("Revocation time must be UTC.", nameof(revokedAtUtc));
+        }
+
         var entity = await _dbContext.RefreshTokens
             .SingleOrDefaultAsync(token => token.Id == tokenId, cancellationToken);
 
@@ -78,7 +82,8 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         entity.Revoke(revokedAtUtc, reason, replacedByTokenId);
     }
 
-    public async Task RevokeActiveFamilyAsync(Guid familyId, DateTime revokedAtUtc, RefreshTokenRevocationReason reason, CancellationToken cancellationToken = default)
+    public async Task RevokeActiveFamilyAsync(Guid familyId, DateTime revokedAtUtc, RefreshTokenRevocationReason reason,
+        CancellationToken cancellationToken = default)
     {
         if (familyId == Guid.Empty)
             throw new ArgumentException("Token family ID cannot be empty.", nameof(familyId));

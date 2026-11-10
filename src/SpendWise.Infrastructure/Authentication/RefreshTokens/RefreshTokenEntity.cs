@@ -15,9 +15,10 @@ public sealed class RefreshTokenEntity
 
     public RefreshTokenRevocationReason? RevocationReason { get; private set; }
 
-    // SQL Server maintains this value on every update.
-    public byte[] RowVersion { get; private set; } = null!;
-
+    /// <summary>
+    /// Uses PostgreSQL's xmin system column for optimistic concurrency control.
+    /// </summary>
+    public uint Version { get; private set; }
     private RefreshTokenEntity()
     {
     }

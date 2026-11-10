@@ -47,11 +47,7 @@ namespace SpendWise.Domain.Entities
                     "User ID cannot be empty.",
                     nameof(userId));
             }
-            if (startDate.Date < DateTime.UtcNow.Date)
-            {
-                throw new ValidationException(
-                    "Start date cannot be in the past.");
-            }
+          
             ValidateSchedule(
                    transactionName,
                    amount,
@@ -63,6 +59,12 @@ namespace SpendWise.Domain.Entities
                    nextOccurrenceDate,
                    endDate,
                    frequency);
+            
+            if (startDate.Date < DateTime.UtcNow.Date)
+            {
+                throw new ValidationException("Start date cannot be in the past.");
+            }
+            
             UserId = userId;
             TransactionName = transactionName.Trim();
             Amount = amount;
@@ -88,6 +90,21 @@ namespace SpendWise.Domain.Entities
                         DateTime? endDate,
                         RecurringFrequency frequency)
         {
+            if (startDate.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Start date must be UTC.", nameof(startDate));
+            }
+
+            if (nextOccurrenceDate.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Next occurrence date must be UTC.", nameof(nextOccurrenceDate));
+            }
+
+            if (endDate.HasValue && endDate.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("End date must be UTC.", nameof(endDate));
+            }
+            
             if (sourceAccountId == Guid.Empty)
             {
                 throw new ArgumentException("Source account ID cannot be empty.", nameof(sourceAccountId));
