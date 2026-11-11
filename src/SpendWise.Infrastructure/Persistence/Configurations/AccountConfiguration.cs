@@ -113,5 +113,11 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .WithOne(transaction => transaction.DestinationAccount)
             .HasForeignKey(transaction => transaction.DestinationAccountId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Navigation(account => account.SourceTransactions)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(account => account.DestinationTransactions)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

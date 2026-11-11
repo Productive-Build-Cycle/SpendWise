@@ -33,9 +33,11 @@ namespace SpendWise.Domain.Entities
 
         public Money? CreditLimit { get; private set; }
 
-        public ICollection<Transactions> SourceTransactions { get; private set; } = new List<Transactions>();
+        private readonly List<Transactions> _sourceTransactions = new();
+        private readonly List<Transactions> _destinationTransactions = new();
 
-        public ICollection<Transactions> DestinationTransactions { get; private set; } = new List<Transactions>();
+        public IReadOnlyCollection<Transactions> SourceTransactions => _sourceTransactions.AsReadOnly();
+        public IReadOnlyCollection<Transactions> DestinationTransactions => _destinationTransactions.AsReadOnly();
 
         private Account()
         {
@@ -128,7 +130,6 @@ namespace SpendWise.Domain.Entities
             CreditLimit = creditLimit;
         }
 
-        //..................................................................
         public void Deposit(Money deposit)
         {
             if (AccountType != AccountType.Chequing &&
@@ -154,7 +155,6 @@ namespace SpendWise.Domain.Entities
             Balance = Balance.Add(deposit);
         }
 
-        //..................................................................
         public void Withdraw(Money withdrawal)
         {
             if (AccountType != AccountType.Chequing &&
@@ -185,7 +185,6 @@ namespace SpendWise.Domain.Entities
             Balance = Balance.Subtract(withdrawal);
         }
 
-        //..................................................................
         public void PayCreditCard(Money payment)
         {
             if (AccountType != AccountType.CreditCard)
@@ -212,7 +211,6 @@ namespace SpendWise.Domain.Entities
             Balance = Balance.Subtract(payment);
         }
 
-        //..................................................................
         public void MakeCreditCardPurchase(Money purchase)
         {
             if (AccountType != AccountType.CreditCard)

@@ -7,15 +7,20 @@ public sealed class Money : IEquatable<Money>
     public decimal Amount { get; }
     public Currency Currency { get; }
 
+    private const decimal MaxAmount = 9_999_999_999_999_999.99m;
+
     public Money(decimal amount, Currency currency)
     {
         ArgumentNullException.ThrowIfNull(currency);
 
         if (amount < 0)
-        {
-            throw new ValidationException(
-                "Money amount cannot be negative.");
-        }
+            throw new ValidationException("Money amount cannot be negative.");
+
+        if (amount > MaxAmount)
+            throw new ValidationException("Money amount exceeds the maximum supported value.");
+
+        if (decimal.Round(amount, 2) != amount)
+            throw new ValidationException("Money amount cannot have more than two decimal places.");
 
         Amount = amount;
         Currency = currency;
