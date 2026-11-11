@@ -155,5 +155,57 @@ namespace SpendWise.Domain.Tests
 
             Assert.Equal(1000m, account.Balance.Amount);
         }
+
+        [Fact]
+        public void Rename_ValidName_UpdatesAccountName()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Savings",
+                AccountType.Savings,
+                new Money(1000, new Currency("USD")));
+
+            account.Rename("  New Name  ");
+
+            Assert.Equal("New Name", account.AccountName);
+        }
+
+        [Fact]
+        public void Rename_EmptyName_ThrowsArgumentException()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Savings",
+                AccountType.Savings,
+                new Money(1000, new Currency("USD")));
+
+            Assert.Throws<ArgumentException>(() => account.Rename(" "));
+        }
+
+        [Fact]
+        public void UpdateCreditLimit_ValidLimit_UpdatesCreditLimit()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Credit Card",
+                AccountType.CreditCard,
+                new Money(1000, new Currency("USD")),
+                new Money(5000, new Currency("USD")));
+
+            account.UpdateCreditLimit(new Money(6000, new Currency("USD")));
+
+            Assert.Equal(6000m, account.CreditLimit!.Amount);
+        }
+
+        [Fact]
+        public void UpdateCreditLimit_BelowOutstandingBalance_ThrowsValidationException()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Credit Card",
+                AccountType.CreditCard,
+                new Money(1000, new Currency("USD")),
+                new Money(5000, new Currency("USD")));
+
+            Assert.Throws<ValidationException>(() =>
+                account.UpdateCreditLimit(new Money(500, new Currency("USD"))));
+        }
+        
     }
 }
