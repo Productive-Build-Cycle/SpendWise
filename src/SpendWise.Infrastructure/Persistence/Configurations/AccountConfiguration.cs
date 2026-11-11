@@ -35,6 +35,42 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
                     ("CreditLimit_Amount" IS NOT NULL AND "CreditLimit_Currency" = 'USD')
                 )
                 """);
+
+            table.HasCheckConstraint(
+                "CK_Accounts_AccountType_Valid",
+                "\"AccountType\" IN (1, 2, 3, 4, 5, 6, 7, 8)");
+
+            table.HasCheckConstraint(
+                "CK_Accounts_CreditLimit_AccountType",
+                """
+                (
+                    "AccountType" = 4
+                    AND "CreditLimit_Amount" IS NOT NULL
+                    AND "CreditLimit_Currency" = 'USD'
+                )
+                OR
+                (
+                    "AccountType" <> 4
+                    AND "CreditLimit_Amount" IS NULL
+                    AND "CreditLimit_Currency" IS NULL
+                )
+                """);
+
+            table.HasCheckConstraint(
+                "CK_Accounts_CreditCardBalance_WithinLimit",
+                """
+                "AccountType" <> 4
+                OR
+                (
+                    "CreditLimit_Amount" IS NOT NULL
+                    AND "OpeningBalance_Amount" <= "CreditLimit_Amount"
+                    AND "Balance_Amount" <= "CreditLimit_Amount"
+                )
+                """);
+
+            table.HasCheckConstraint(
+                "CK_Accounts_Name_NotBlank",
+                "length(btrim(\"AccountName\")) > 0");
         });
 
         builder.HasKey(account => account.Id);
@@ -113,7 +149,7 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .WithOne(transaction => transaction.DestinationAccount)
             .HasForeignKey(transaction => transaction.DestinationAccountId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.Navigation(account => account.SourceTransactions)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 

@@ -181,11 +181,19 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.ToTable("Accounts", null, t =>
                         {
+                            t.HasCheckConstraint("CK_Accounts_AccountType_Valid", "\"AccountType\" IN (1, 2, 3, 4, 5, 6, 7, 8)");
+
                             t.HasCheckConstraint("CK_Accounts_Balance_NonNegative", "\"Balance_Amount\" >= 0");
+
+                            t.HasCheckConstraint("CK_Accounts_CreditCardBalance_WithinLimit", "\"AccountType\" <> 4\r\nOR\r\n(\r\n    \"CreditLimit_Amount\" IS NOT NULL\r\n    AND \"OpeningBalance_Amount\" <= \"CreditLimit_Amount\"\r\n    AND \"Balance_Amount\" <= \"CreditLimit_Amount\"\r\n)");
+
+                            t.HasCheckConstraint("CK_Accounts_CreditLimit_AccountType", "(\r\n    \"AccountType\" = 4\r\n    AND \"CreditLimit_Amount\" IS NOT NULL\r\n    AND \"CreditLimit_Currency\" = 'USD'\r\n)\r\nOR\r\n(\r\n    \"AccountType\" <> 4\r\n    AND \"CreditLimit_Amount\" IS NULL\r\n    AND \"CreditLimit_Currency\" IS NULL\r\n)");
 
                             t.HasCheckConstraint("CK_Accounts_CreditLimit_Positive", "\"CreditLimit_Amount\" IS NULL OR \"CreditLimit_Amount\" > 0");
 
                             t.HasCheckConstraint("CK_Accounts_Currency_USD", "\"OpeningBalance_Currency\" = 'USD'\r\nAND \"Balance_Currency\" = 'USD'\r\nAND\r\n(\r\n    (\"CreditLimit_Amount\" IS NULL AND \"CreditLimit_Currency\" IS NULL)\r\n    OR\r\n    (\"CreditLimit_Amount\" IS NOT NULL AND \"CreditLimit_Currency\" = 'USD')\r\n)");
+
+                            t.HasCheckConstraint("CK_Accounts_Name_NotBlank", "length(btrim(\"AccountName\")) > 0");
 
                             t.HasCheckConstraint("CK_Accounts_OpeningBalance_NonNegative", "\"OpeningBalance_Amount\" >= 0");
                         });
