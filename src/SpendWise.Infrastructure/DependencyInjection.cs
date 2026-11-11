@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITransactionManager, EfTransactionManager>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        
+        services.AddScoped<IAccountRepository, AccountRepository>();
 
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 

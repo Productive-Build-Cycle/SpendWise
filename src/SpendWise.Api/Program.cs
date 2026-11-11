@@ -1,6 +1,8 @@
 using SpendWise.Api.Extensions;
 using SpendWise.Api.Middleware;
+using SpendWise.Api.Services;
 using SpendWise.Application;
+using SpendWise.Application.Interfaces;
 using SpendWise.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,9 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddJwtAuthentication();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

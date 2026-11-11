@@ -56,6 +56,19 @@ public class ExceptionHandlingMiddleware
             await context.Response.WriteAsJsonAsync(problem);
         }
         
+        catch (UnauthenticatedUserException)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.Headers.CacheControl = "no-store";
+
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Authentication required.",
+                Instance = context.Request.Path
+            });
+        }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
