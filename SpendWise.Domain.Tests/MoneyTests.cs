@@ -13,7 +13,7 @@ namespace SpendWise.Domain.Tests
             decimal negativeAmount = -10;
             var currency = new Currency("USD");
             // Act & Assert
-            Assert.Throws<ValidationException>(() => new Money(negativeAmount, currency));
+            Assert.Throws<DomainValidationException>(() => new Money(negativeAmount, currency));
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace SpendWise.Domain.Tests
             var money1 = new Money(10, new Currency("USD"));
             var money2 = new Money(5, new Currency("IRR"));
             // Act & Assert
-            Assert.Throws<ValidationException>(() => money1.Add(money2));
+            Assert.Throws<DomainValidationException>(() => money1.Add(money2));
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace SpendWise.Domain.Tests
             var money1 = new Money(10, new Currency("USD"));
             var money2 = new Money(5, new Currency("IRR"));
             // Act & Assert
-            Assert.Throws<ValidationException>(() => money1.Subtract(money2));
+            Assert.Throws<DomainValidationException>(() => money1.Subtract(money2));
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace SpendWise.Domain.Tests
             var money1 = new Money(5, new Currency("USD"));
             var money2 = new Money(10, new Currency("USD"));
             // Act & Assert
-            Assert.Throws<ValidationException>(() => money1.Subtract(money2));
+            Assert.Throws<DomainValidationException>(() => money1.Subtract(money2));
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace SpendWise.Domain.Tests
         {
             var currency = new Currency("USD");
 
-            Assert.Throws<ValidationException>(() => new Money(10.123m, currency));
+            Assert.Throws<DomainValidationException>(() => new Money(10.123m, currency));
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace SpendWise.Domain.Tests
         {
             var currency = new Currency("USD");
 
-            Assert.Throws<ValidationException>(() => new Money(10_000_000_000_000_000m, currency));
+            Assert.Throws<DomainValidationException>(() => new Money(10_000_000_000_000_000m, currency));
         }
 
         [Fact]

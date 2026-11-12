@@ -26,11 +26,11 @@ namespace SpendWise.Domain.Entities
             categoryName = categoryName.Trim();
             if (categoryName.Length > 100)
             {
-                throw new ValidationException("Category name cannot exceed 100 characters.");
+                throw new DomainValidationException("Category name cannot exceed 100 characters.");
             }
             if (description != null && description.Length > 500)
             {
-                throw new ValidationException("Description cannot exceed 500 characters.");
+                throw new DomainValidationException("Description cannot exceed 500 characters.");
             }
            
             UserId = userId;

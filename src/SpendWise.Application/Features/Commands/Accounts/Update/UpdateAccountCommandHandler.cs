@@ -36,12 +36,12 @@ public sealed class UpdateAccountCommandHandler
         if (account.AccountType == AccountType.CreditCard)
         {
             if (!request.CreditLimit.HasValue)
-                throw new ValidationException("Credit limit is required for credit card accounts.");
+                throw new DomainValidationException("Credit limit is required for credit card accounts.");
 
             account.UpdateCreditLimit(new Money(request.CreditLimit.Value, account.Balance.Currency));
         }
         else if (request.CreditLimit.HasValue)
-            throw new ValidationException("Credit limit is only allowed for credit card accounts.");
+            throw new DomainValidationException("Credit limit is only allowed for credit card accounts.");
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

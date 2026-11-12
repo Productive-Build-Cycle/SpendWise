@@ -2,7 +2,7 @@
 
 namespace SpendWise.Application.Common.Exceptions;
 
-public class NotFoundException : DomainException
+public class NotFoundException : Exception
 {
     public NotFoundException(string message) : base(message)
     {

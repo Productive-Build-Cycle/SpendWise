@@ -56,19 +56,19 @@ namespace SpendWise.Domain.Entities
             if (sourceAccountId.HasValue && destinationAccountId.HasValue &&
                 sourceAccountId.Value == destinationAccountId.Value)
             {
-                throw new ValidationException("Source and destination account IDs cannot be the same.");
+                throw new DomainValidationException("Source and destination account IDs cannot be the same.");
             }
 
             if (sourceAccountId is null && destinationAccountId is null)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "At least one account must be provided.");
             }
 
             ArgumentNullException.ThrowIfNull(amount, nameof(amount));
             if (amount.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Amount must be greater than zero.");
             }
 
@@ -81,7 +81,7 @@ namespace SpendWise.Domain.Entities
                 description = description.Trim();
                 if (description.Length > 500)
                 {
-                    throw new ValidationException(
+                    throw new DomainValidationException(
                         "Description cannot exceed 500 characters.");
                 }
             }
@@ -93,7 +93,7 @@ namespace SpendWise.Domain.Entities
 
             if (transactionDate > DateTime.UtcNow)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Transaction date cannot be in the future.");
             }
 
@@ -102,7 +102,7 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Income:
                     if (sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Income transactions require a destination account and no source account.");
                     }
 
@@ -111,7 +111,7 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Expense:
                     if (!sourceAccountId.HasValue || destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Expense transactions require a source account and no destination account.");
                     }
 
@@ -120,14 +120,14 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Transfer:
                     if (!sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Transfer transactions require both source and destination accounts.");
                     }
 
                     break;
 
                 default:
-                    throw new ValidationException(
+                    throw new DomainValidationException(
                         "Invalid transaction type.");
             }
 

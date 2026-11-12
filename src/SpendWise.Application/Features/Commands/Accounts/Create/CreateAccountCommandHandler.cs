@@ -35,7 +35,7 @@ public sealed class CreateAccountCommandHandler : IRequestHandler<CreateAccountC
             .FirstOrDefault(name => string.Equals(name, request.AccountType.Trim(), StringComparison.OrdinalIgnoreCase));
 
         if (typeName is null)
-            throw new ValidationException("Invalid account type.");
+            throw new DomainValidationException("Invalid account type.");
 
         var accountType = Enum.Parse<AccountType>(typeName);
         

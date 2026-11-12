@@ -62,7 +62,7 @@ namespace SpendWise.Domain.Entities
             
             if (startDate.Date < DateTime.UtcNow.Date)
             {
-                throw new ValidationException("Start date cannot be in the past.");
+                throw new DomainValidationException("Start date cannot be in the past.");
             }
             
             UserId = userId;
@@ -116,11 +116,11 @@ namespace SpendWise.Domain.Entities
             if (sourceAccountId.HasValue && destinationAccountId.HasValue && 
                 sourceAccountId.Value == destinationAccountId.Value)
             {
-                throw new ValidationException("Source and destination account IDs cannot be the same.");
+                throw new DomainValidationException("Source and destination account IDs cannot be the same.");
             }
             if (sourceAccountId is null && destinationAccountId is null)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "At least one account must be provided.");
             }
             if (categoryId == Guid.Empty)
@@ -135,40 +135,40 @@ namespace SpendWise.Domain.Entities
             transactionName = transactionName.Trim();
             if(transactionName.Length > 100)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Transaction name cannot exceed 100 characters.");
             }
             ArgumentNullException.ThrowIfNull(amount, nameof(amount));
             if (amount.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                    "Amount must be greater than zero.");
             }
             if (!Enum.IsDefined(typeof(TransactionTypes), transactionType))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Invalid transaction type.");
             }
             if (!Enum.IsDefined(typeof(RecurringFrequency), frequency))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Invalid recurring frequency.");
             }
             if (startDate > nextOccurrenceDate)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Next occurrence date cannot be before the start date.");
             }
 
             if (endDate.HasValue && endDate.Value < startDate)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "End date cannot be before the start date.");
             }
 
             if (endDate.HasValue && nextOccurrenceDate > endDate.Value)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                      "Next occurrence date cannot be after the end date.");
             }
            
@@ -177,7 +177,7 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Income:
                     if (sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Income transactions require a destination account and no source account.");
                     }
                     break;
@@ -185,7 +185,7 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Expense:
                     if (!sourceAccountId.HasValue || destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Expense transactions require a source account and no destination account.");
                     }
                     break;
@@ -193,12 +193,12 @@ namespace SpendWise.Domain.Entities
                 case TransactionTypes.Transfer:
                     if (!sourceAccountId.HasValue || !destinationAccountId.HasValue)
                     {
-                        throw new ValidationException(
+                        throw new DomainValidationException(
                             "Transfer transactions require both source and destination accounts.");
                     }
                     break;
                 default:
-                    throw new ValidationException("Invalid transaction type.");
+                    throw new DomainValidationException("Invalid transaction type.");
             }
         }
        
@@ -210,7 +210,7 @@ namespace SpendWise.Domain.Entities
                 RecurringFrequency.Weekly => NextOccurrenceDate.AddDays(7),
                 RecurringFrequency.Monthly => NextOccurrenceDate.AddMonths(1),
                 RecurringFrequency.Yearly => NextOccurrenceDate.AddYears(1),
-                _ => throw new ValidationException("Invalid recurring frequency.")
+                _ => throw new DomainValidationException("Invalid recurring frequency.")
             };
             if(EndDate.HasValue && nextDate > EndDate.Value)
             {
@@ -224,7 +224,7 @@ namespace SpendWise.Domain.Entities
             DateTime? nextDate = CalculateNextOccurrence();
             if (!nextDate.HasValue)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The recurring transaction schedule has ended.");
             }
 

@@ -93,7 +93,7 @@ namespace SpendWise.Domain.Tests
             );
             var purchase = new Money(4500, new Currency("USD"));
             // Act & Assert
-            Assert.Throws<ValidationException>(() => account.MakeCreditCardPurchase(purchase));
+            Assert.Throws<DomainValidationException>(() => account.MakeCreditCardPurchase(purchase));
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace SpendWise.Domain.Tests
             var openingBalance = new Money(1000, new Currency("USD"));
             var creditLimit = new Money(5000, new Currency("USD"));
 
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
                 new Account(
                     Guid.NewGuid(),
                     "My Savings",
@@ -116,7 +116,7 @@ namespace SpendWise.Domain.Tests
         {
             var openingBalance = new Money(1000, new Currency("USD"));
 
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
                 new Account(
                     Guid.NewGuid(),
                     "My Credit Card",
@@ -130,7 +130,7 @@ namespace SpendWise.Domain.Tests
             var openingBalance = new Money(6000, new Currency("USD"));
             var creditLimit = new Money(5000, new Currency("USD"));
 
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
                 new Account(
                     Guid.NewGuid(),
                     "My Credit Card",
@@ -150,7 +150,7 @@ namespace SpendWise.Domain.Tests
 
             var withdrawal = new Money(1001, new Currency("USD"));
 
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
                 account.Withdraw(withdrawal));
 
             Assert.Equal(1000m, account.Balance.Amount);
@@ -203,7 +203,7 @@ namespace SpendWise.Domain.Tests
                 new Money(1000, new Currency("USD")),
                 new Money(5000, new Currency("USD")));
 
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
                 account.UpdateCreditLimit(new Money(500, new Currency("USD"))));
         }
         

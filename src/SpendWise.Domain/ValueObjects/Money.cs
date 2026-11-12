@@ -14,13 +14,13 @@ public sealed class Money : IEquatable<Money>
         ArgumentNullException.ThrowIfNull(currency);
 
         if (amount < 0)
-            throw new ValidationException("Money amount cannot be negative.");
+            throw new DomainValidationException("Money amount cannot be negative.");
 
         if (amount > MaxAmount)
-            throw new ValidationException("Money amount exceeds the maximum supported value.");
+            throw new DomainValidationException("Money amount exceeds the maximum supported value.");
 
         if (decimal.Round(amount, 2) != amount)
-            throw new ValidationException("Money amount cannot have more than two decimal places.");
+            throw new DomainValidationException("Money amount cannot have more than two decimal places.");
 
         Amount = amount;
         Currency = currency;
@@ -39,7 +39,7 @@ public sealed class Money : IEquatable<Money>
 
         if (other.Amount > Amount)
         {
-            throw new ValidationException(
+            throw new DomainValidationException(
                 "Money amount cannot be negative.");
         }
 
@@ -52,7 +52,7 @@ public sealed class Money : IEquatable<Money>
 
         if (Currency != other.Currency)
         {
-            throw new ValidationException(
+            throw new DomainValidationException(
                 "Cannot perform an operation with different currencies.");
         }
     }

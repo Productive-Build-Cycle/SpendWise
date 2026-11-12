@@ -49,15 +49,15 @@ namespace SpendWise.Domain.Entities
             ArgumentNullException.ThrowIfNull(contributionAmount, nameof(contributionAmount));
             if (contributionAmount.Amount <= 0)
             {
-                throw new ValidationException("Contribution amount must be greater than zero.");
+                throw new DomainValidationException("Contribution amount must be greater than zero.");
             }
             if(contributionAmount.Currency.Code != "USD")
             {
-                throw new ValidationException("Contribution amount must be in USD.");
+                throw new DomainValidationException("Contribution amount must be in USD.");
             }
             if (contributionDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                throw new ValidationException("Contribution date cannot be in the future.");
+                throw new DomainValidationException("Contribution date cannot be in the future.");
             }
             if (accountId == Guid.Empty)
             {
@@ -74,41 +74,41 @@ namespace SpendWise.Domain.Entities
             ArgumentNullException.ThrowIfNull(release);
             if(release.GoalContributionId != Id)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release does not belong to this contribution.");
             }
             if (_releases.Any(r => r.Id == release.Id))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "This release has already been added to the contribution.");
             }
             
             ArgumentNullException.ThrowIfNull(release.ReleaseAmount, nameof(release.ReleaseAmount));
             if(release.ReleaseAmount.Currency.Code != ContributionAmount.Currency.Code)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release amount currency does not match the contribution amount currency.");
             }
             if (release.ReleaseAmount.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release amount must be greater than zero.");
             }
             
             if (release.ReleaseAmount.Amount > RemainingAmount.Amount)
 
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release amount exceeds the remaining contribution amount.");
             }
             if (release.ReleaseDate < ContributionDate)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release date cannot be earlier than the contribution date.");
             }
             if(release.ReleaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "The release date cannot be in the future.");
             }
             _releases.Add(release);

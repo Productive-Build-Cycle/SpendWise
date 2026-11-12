@@ -16,19 +16,19 @@ public sealed class User : BaseEntity
 
     public void SetFirstName(string firstName)
     {
-        if (string.IsNullOrWhiteSpace(firstName)) throw new ValidationException("نام نمی تواند خالی باشد.");
+        if (string.IsNullOrWhiteSpace(firstName)) throw new DomainValidationException("نام نمی تواند خالی باشد.");
         firstName = firstName.Trim();
         if (firstName.Length < 2 || firstName.Length > 50)
-            throw new ValidationException("نام باید بین 2 تا 50 کاراکتر باشد.");
+            throw new DomainValidationException("نام باید بین 2 تا 50 کاراکتر باشد.");
         FirstName = firstName;
     }
 
     public void SetLastName(string lastName)
     {
-        if (string.IsNullOrWhiteSpace(lastName)) throw new ValidationException("نام خانوادگی نمی تواند خالی باشد.");
+        if (string.IsNullOrWhiteSpace(lastName)) throw new DomainValidationException("نام خانوادگی نمی تواند خالی باشد.");
         lastName = lastName.Trim();
         if (lastName.Length < 2 || lastName.Length > 50)
-            throw new ValidationException("نام خانوادگی باید بین 2 تا 50 کاراکتر باشد.");
+            throw new DomainValidationException("نام خانوادگی باید بین 2 تا 50 کاراکتر باشد.");
         LastName = lastName;
     }
 }

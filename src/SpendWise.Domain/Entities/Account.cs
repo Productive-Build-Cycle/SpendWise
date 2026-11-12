@@ -61,19 +61,19 @@ namespace SpendWise.Domain.Entities
             accountName = accountName.Trim();
             if (accountName.Length > 100)
             {
-                throw new ValidationException("Account name cannot exceed 100 characters.");
+                throw new DomainValidationException("Account name cannot exceed 100 characters.");
             }
 
             ArgumentNullException.ThrowIfNull(openingBalance);
             if (openingBalance.Amount < 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Opening balance cannot be negative.");
             }
 
             if (openingBalance.Currency.Code != SupportedCurrencyCode)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     $"only {SupportedCurrencyCode} currency is supported in this version.");
             }
 
@@ -88,20 +88,20 @@ namespace SpendWise.Domain.Entities
             if (accountType != AccountType.CreditCard &&
                 creditLimit is not null)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "creditLimit should only be  provided for credit card accounts.");
             }
 
             if (accountType == AccountType.CreditCard && creditLimit is null)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Credit limit must be provided for credit card accounts.");
             }
 
             if (creditLimit is not null &&
                 creditLimit.Currency.Code != openingBalance.Currency.Code)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     $"Credit limit must have the same currency as the opening balance.");
             }
 
@@ -109,7 +109,7 @@ namespace SpendWise.Domain.Entities
                 creditLimit is not null &&
                 openingBalance.Amount > creditLimit.Amount)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Opening balance cannot exceed the credit limit for credit card accounts.");
             }
 
@@ -117,7 +117,7 @@ namespace SpendWise.Domain.Entities
                 creditLimit is not null &&
                 creditLimit.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Credit limit must be a positive value for credit card accounts.");
             }
 
@@ -138,18 +138,18 @@ namespace SpendWise.Domain.Entities
                 AccountType != AccountType.Cash &&
                 AccountType != AccountType.Investment)
             {
-                throw new ValidationException("Deposits are not supported for this account type.");
+                throw new DomainValidationException("Deposits are not supported for this account type.");
             }
 
             ArgumentNullException.ThrowIfNull(deposit);
             if (deposit.Amount <= 0)
             {
-                throw new ValidationException("Deposit amount must be greater than zero.");
+                throw new DomainValidationException("Deposit amount must be greater than zero.");
             }
 
             if (deposit.Currency != Balance.Currency)
             {
-                throw new ValidationException("Deposit currency must match the account currency.");
+                throw new DomainValidationException("Deposit currency must match the account currency.");
             }
 
             Balance = Balance.Add(deposit);
@@ -163,23 +163,23 @@ namespace SpendWise.Domain.Entities
                 AccountType != AccountType.Cash &&
                 AccountType != AccountType.Investment)
             {
-                throw new ValidationException("Withdrawals are not supported for this account type");
+                throw new DomainValidationException("Withdrawals are not supported for this account type");
             }
 
             ArgumentNullException.ThrowIfNull(withdrawal);
             if (withdrawal.Amount <= 0)
             {
-                throw new ValidationException("Withdrawal amount must be greater than zero.");
+                throw new DomainValidationException("Withdrawal amount must be greater than zero.");
             }
 
             if (withdrawal.Currency != Balance.Currency)
             {
-                throw new ValidationException("Withdrawal currency must match the account currency.");
+                throw new DomainValidationException("Withdrawal currency must match the account currency.");
             }
 
             if (withdrawal.Amount > Balance.Amount)
             {
-                throw new ValidationException("Insufficient funds for this withdrawal.");
+                throw new DomainValidationException("Insufficient funds for this withdrawal.");
             }
 
             Balance = Balance.Subtract(withdrawal);
@@ -189,23 +189,23 @@ namespace SpendWise.Domain.Entities
         {
             if (AccountType != AccountType.CreditCard)
             {
-                throw new ValidationException("Payments are only allowed for credit card accounts.");
+                throw new DomainValidationException("Payments are only allowed for credit card accounts.");
             }
 
             ArgumentNullException.ThrowIfNull(payment);
             if (payment.Currency != Balance.Currency)
             {
-                throw new ValidationException("Payment currency must match the account currency.");
+                throw new DomainValidationException("Payment currency must match the account currency.");
             }
 
             if (payment.Amount <= 0)
             {
-                throw new ValidationException("Payment amount must be greater than zero.");
+                throw new DomainValidationException("Payment amount must be greater than zero.");
             }
 
             if (payment.Amount > Balance.Amount)
             {
-                throw new ValidationException("Payment amount exceeds the outstanding balance.");
+                throw new DomainValidationException("Payment amount exceeds the outstanding balance.");
             }
 
             Balance = Balance.Subtract(payment);
@@ -215,23 +215,23 @@ namespace SpendWise.Domain.Entities
         {
             if (AccountType != AccountType.CreditCard)
             {
-                throw new ValidationException("Purchases are only allowed for credit card accounts.");
+                throw new DomainValidationException("Purchases are only allowed for credit card accounts.");
             }
 
             ArgumentNullException.ThrowIfNull(purchase);
             if (purchase.Currency != Balance.Currency)
             {
-                throw new ValidationException("Purchase currency must match the account currency.");
+                throw new DomainValidationException("Purchase currency must match the account currency.");
             }
 
             if (purchase.Amount <= 0)
             {
-                throw new ValidationException("Purchase amount must be greater than zero.");
+                throw new DomainValidationException("Purchase amount must be greater than zero.");
             }
 
             if (purchase.Amount + Balance.Amount > CreditLimit!.Amount)
             {
-                throw new ValidationException("Purchase amount exceeds the credit limit.");
+                throw new DomainValidationException("Purchase amount exceeds the credit limit.");
             }
 
             Balance = Balance.Add(purchase);
@@ -245,7 +245,7 @@ namespace SpendWise.Domain.Entities
             accountName = accountName.Trim();
 
             if (accountName.Length > 100)
-                throw new ValidationException("Account name cannot exceed 100 characters.");
+                throw new DomainValidationException("Account name cannot exceed 100 characters.");
 
             AccountName = accountName;
         }
@@ -255,16 +255,16 @@ namespace SpendWise.Domain.Entities
             ArgumentNullException.ThrowIfNull(creditLimit);
 
             if (AccountType != AccountType.CreditCard)
-                throw new ValidationException("Credit limit can only be updated for credit card accounts.");
+                throw new DomainValidationException("Credit limit can only be updated for credit card accounts.");
 
             if (creditLimit.Amount <= 0)
-                throw new ValidationException("Credit limit must be positive.");
+                throw new DomainValidationException("Credit limit must be positive.");
 
             if (creditLimit.Currency != Balance.Currency)
-                throw new ValidationException("Credit limit currency must match account currency.");
+                throw new DomainValidationException("Credit limit currency must match account currency.");
 
             if (creditLimit.Amount < Balance.Amount)
-                throw new ValidationException("Credit limit cannot be lower than the outstanding balance.");
+                throw new DomainValidationException("Credit limit cannot be lower than the outstanding balance.");
 
             CreditLimit = creditLimit;
         }

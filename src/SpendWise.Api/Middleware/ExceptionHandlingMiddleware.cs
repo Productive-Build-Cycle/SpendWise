@@ -4,13 +4,14 @@ using SpendWise.Application.Common.Exceptions;
 
 namespace SpendWise.Api.Middleware;
 
-// Turns exceptions thrown from the MediatR pipeline into ProblemDetails responses.
-public class ExceptionHandlingMiddleware
+public sealed class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
@@ -26,61 +27,144 @@ public class ExceptionHandlingMiddleware
         {
             var errors = ex.Errors
                 .GroupBy(e => e.PropertyName)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(e => e.ErrorMessage).ToArray());
 
-            var problem = new ValidationProblemDetails(errors)
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "One or more validation errors occurred."
-            };
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(problem);
+            await WriteProblemAsync(context,
+                new ValidationProblemDetails(errors)
+                {
+                    Title = "One or more validation errors occurred."
+                },
+                StatusCodes.Status400BadRequest);
         }
-
-        catch (InvalidCredentialsException)
+        catch (DomainRuleViolationException ex)
         {
             var problem = new ProblemDetails
             {
-                Status = StatusCodes.Status401Unauthorized,
-                Title = "Authentication failed.",
-                Detail = "Invalid username or password.",
-                Instance = context.Request.Path
+                Title = "Domain validation failed.",
+                Detail = ex.Message
             };
 
-            problem.Extensions["traceId"] = context.TraceIdentifier;
-
-            context.Response.Headers.CacheControl = "no-store";
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-
-            await context.Response.WriteAsJsonAsync(problem);
+            await WriteProblemAsync(
+                context,
+                problem,
+                StatusCodes.Status400BadRequest);
         }
-        
+        catch (InvalidCredentialsException)
+        {
+            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.Pragma = "no-cache";
+
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "Authentication failed.",
+                    Detail = "Invalid username or password."
+                },
+                StatusCodes.Status401Unauthorized);
+        }
         catch (UnauthenticatedUserException)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.Headers.CacheControl = "no-store";
 
-            await context.Response.WriteAsJsonAsync(new ProblemDetails
-            {
-                Status = StatusCodes.Status401Unauthorized,
-                Title = "Authentication required.",
-                Instance = context.Request.Path
-            });
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "Authentication required."
+                },
+                StatusCodes.Status401Unauthorized);
         }
-        
+        catch (NotFoundException ex)
+        {
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "Resource not found.",
+                    Detail = ex.Message
+                },
+                StatusCodes.Status404NotFound);
+        }
+        catch (ConcurrencyConflictException ex)
+        {
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "Concurrency conflict.",
+                    Detail = ex.Message
+                },
+                StatusCodes.Status409Conflict);
+        }
+        catch (ConflictException ex)
+        {
+            var problem = new ProblemDetails
+            {
+                Title = "Resource conflict.",
+                Detail = ex.Message
+            };
+            
+            await WriteProblemAsync(
+                context,
+                problem,
+                StatusCodes.Status409Conflict);
+        }
+        catch (DomainOperationException ex)
+        {
+            _logger.LogError(ex, "Unhandled domain operation error.");
+
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "An unexpected error occurred."
+                },
+                StatusCodes.Status500InternalServerError);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            // The client canceled the request.
+        }
+
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
 
-            var problem = new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "An unexpected error occurred."
-            };
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(problem);
+            await WriteProblemAsync(
+                context,
+                new ProblemDetails
+                {
+                    Title = "An unexpected error occurred."
+                },
+                StatusCodes.Status500InternalServerError);
         }
+    }
+
+    private async Task WriteProblemAsync<TProblem>(HttpContext context, TProblem problem, int statusCode) where TProblem : ProblemDetails
+    {
+        if (context.Response.HasStarted)
+        {
+            _logger.LogWarning(
+                "Cannot write ProblemDetails because response has already started. TraceId: {TraceId}",
+                context.TraceIdentifier);
+
+            return;
+        }
+
+        problem.Status = statusCode;
+        problem.Instance = context.Request.Path;
+        problem.Extensions["traceId"] = context.TraceIdentifier;
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/problem+json";
+
+        await context.Response.WriteAsJsonAsync(
+            problem,
+            contentType: "application/problem+json",
+            options: null,
+            cancellationToken: context.RequestAborted);
     }
 }
