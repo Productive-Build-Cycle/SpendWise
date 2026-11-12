@@ -125,7 +125,7 @@ namespace SpendWise.Domain.Entities
             AccountName = accountName;
             AccountType = accountType;
             OpeningBalance = openingBalance;
-            Balance = openingBalance;
+            Balance = new Money(openingBalance.Amount, openingBalance.Currency);
 
             CreditLimit = creditLimit;
         }

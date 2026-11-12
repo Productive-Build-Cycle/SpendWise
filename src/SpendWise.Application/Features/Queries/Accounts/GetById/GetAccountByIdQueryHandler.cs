@@ -28,7 +28,7 @@ public sealed class GetAccountByIdQueryHandler : IRequestHandler<GetAccountByIdQ
         return new AccountDetailsDto(
             account.Id,
             account.AccountName,
-            account.AccountType,
+            account.AccountType.ToString(),
             account.OpeningBalance.Amount,
             account.Balance.Amount,
             account.Balance.Currency.Code,

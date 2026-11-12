@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using SpendWise.Application.Interfaces;
 using SpendWise.Domain.Entities;
+using SpendWise.Domain.Enums;
+using SpendWise.Domain.Exceptions;
 using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Application.Features.Commands.Accounts.Create;
@@ -29,10 +31,18 @@ public sealed class CreateAccountCommandHandler : IRequestHandler<CreateAccountC
 
         Money? creditLimit = request.CreditLimit.HasValue ? new Money(request.CreditLimit.Value, currency) : null;
 
+        var typeName = Enum.GetNames<AccountType>()
+            .FirstOrDefault(name => string.Equals(name, request.AccountType.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (typeName is null)
+            throw new ValidationException("Invalid account type.");
+
+        var accountType = Enum.Parse<AccountType>(typeName);
+        
         var account = new Account(
             _currentUser.UserId,
             request.AccountName,
-            request.AccountType,
+            accountType,
             openingBalance,
             creditLimit);
 

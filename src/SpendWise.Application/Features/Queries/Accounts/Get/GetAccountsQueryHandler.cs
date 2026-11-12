@@ -23,7 +23,7 @@ public sealed class GetAccountsQueryHandler : IRequestHandler<GetAccountsQuery, 
         return accounts.Select(account => new AccountListItemDto(
             account.Id,
             account.AccountName,
-            account.AccountType,
+            account.AccountType.ToString(),
             account.Balance.Amount,
             account.Balance.Currency.Code,
             account.CreditLimit?.Amount,

@@ -207,5 +207,20 @@ namespace SpendWise.Domain.Tests
                 account.UpdateCreditLimit(new Money(500, new Currency("USD"))));
         }
         
+        [Fact]
+        public void Constructor_OpeningBalanceAndBalance_UsesSeparateInstances()
+        {
+            var openingBalance = new Money(1000, new Currency("USD"));
+
+            var account = new Account(
+                Guid.NewGuid(),
+                "My Savings",
+                AccountType.Savings,
+                openingBalance);
+
+            Assert.NotSame(account.OpeningBalance, account.Balance);
+
+            Assert.Equal(account.OpeningBalance.Amount, account.Balance.Amount);
+        }
     }
 }

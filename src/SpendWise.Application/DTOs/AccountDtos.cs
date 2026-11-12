@@ -5,7 +5,7 @@ namespace SpendWise.Application.DTOs;
 public sealed record AccountListItemDto(
     Guid Id,
     string AccountName,
-    AccountType AccountType,
+    string AccountType,
     decimal Balance,
     string CurrencyCode,
     decimal? CreditLimit,
@@ -14,7 +14,7 @@ public sealed record AccountListItemDto(
 public sealed record AccountDetailsDto(
     Guid Id,
     string AccountName,
-    AccountType AccountType,
+    string AccountType,
     decimal OpeningBalance,
     decimal Balance,
     string CurrencyCode,
@@ -24,7 +24,7 @@ public sealed record AccountDetailsDto(
     
 public sealed record AccountBalanceDto(
     Guid AccountId,
-    AccountType AccountType,
+    string AccountType,
     decimal Balance,
     string CurrencyCode,
     decimal? CreditLimit,

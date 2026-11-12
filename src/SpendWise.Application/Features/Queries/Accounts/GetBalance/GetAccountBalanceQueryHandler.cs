@@ -32,7 +32,7 @@ public sealed class GetAccountBalanceQueryHandler : IRequestHandler<GetAccountBa
 
         return new AccountBalanceDto(
             account.Id,
-            account.AccountType,
+            account.AccountType.ToString(),
             account.Balance.Amount,
             account.Balance.Currency.Code,
             account.CreditLimit?.Amount,
