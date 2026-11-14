@@ -38,24 +38,17 @@ public sealed class TransactionsConfiguration : IEntityTypeConfiguration<Transac
                     AND "SourceAccountId" IS NOT NULL
                     AND "DestinationAccountId" IS NOT NULL)
                 """);
+
+            table.HasCheckConstraint(
+                "CK_Transactions_CategoryCombination",
+                """
+                ("TransactionType" IN (1, 2) AND "CategoryId" IS NOT NULL)
+                OR
+                ("TransactionType" = 3 AND "CategoryId" IS NULL)
+                """);
         });
 
         builder.HasKey(transaction => transaction.Id);
-
-        builder.HasOne(transaction => transaction.User)
-            .WithMany()
-            .HasForeignKey(transaction => transaction.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(transaction => transaction.SourceAccount)
-            .WithMany(account => account.SourceTransactions)
-            .HasForeignKey(transaction => transaction.SourceAccountId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(transaction => transaction.DestinationAccount)
-            .WithMany(account => account.DestinationTransactions)
-            .HasForeignKey(transaction => transaction.DestinationAccountId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.OwnsOne<Money>(transaction => transaction.Amount, money =>
         {
@@ -85,5 +78,38 @@ public sealed class TransactionsConfiguration : IEntityTypeConfiguration<Transac
         builder.Property(transaction => transaction.TransactionDate)
             .HasColumnType("timestamp with time zone")
             .IsRequired();
+
+        builder.Property(transaction => transaction.CategoryId)
+            .IsRequired(false);
+
+        builder.HasOne(transaction => transaction.User)
+            .WithMany()
+            .HasForeignKey(transaction => transaction.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(transaction => transaction.SourceAccount)
+            .WithMany(account => account.SourceTransactions)
+            .HasForeignKey(transaction => transaction.SourceAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(transaction => transaction.DestinationAccount)
+            .WithMany(account => account.DestinationTransactions)
+            .HasForeignKey(transaction => transaction.DestinationAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(transaction => transaction.Category)
+            .WithMany()
+            .HasForeignKey(transaction => new
+            {
+                transaction.UserId,
+                transaction.CategoryId
+            })
+            .HasPrincipalKey(category => new
+            {
+                category.UserId,
+                category.Id
+            })
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Transactions_Categories_UserId_CategoryId");
     }
 }
