@@ -22,11 +22,6 @@ internal class BudgetConfiguration : IEntityTypeConfiguration<Budget>
 
         builder.HasKey(budget => budget.Id);
 
-        builder.HasOne(budget => budget.User)
-            .WithMany()
-            .HasForeignKey(budget => budget.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.OwnsOne(budget => budget.Amount, money =>
         {
             money.Property(m => m.Amount)
@@ -50,10 +45,25 @@ internal class BudgetConfiguration : IEntityTypeConfiguration<Budget>
         builder.Property(budget => budget.EndDate)
             .HasColumnType("date")
             .IsRequired();
+        
+        builder.HasOne(budget => budget.User)
+            .WithMany()
+            .HasForeignKey(budget => budget.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(budget => budget.Category)
             .WithMany()
-            .HasForeignKey(budget => budget.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(budget => new
+            {
+                budget.UserId,
+                budget.CategoryId
+            })
+            .HasPrincipalKey(category => new
+            {
+                category.UserId,
+                category.Id
+            })
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Budgets_Categories_UserId_CategoryId");
     }
 }

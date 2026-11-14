@@ -225,9 +225,7 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "CategoryId");
 
                     b.ToTable("Budgets", null, t =>
                         {
@@ -248,12 +246,20 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<short>("CategoryType")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -263,9 +269,13 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasAlternateKey("UserId", "Id")
+                        .HasName("AK_Categories_UserId_Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Categories_CategoryType_Valid", "\"CategoryType\" IN (1, 2)");
+                        });
                 });
 
             modelBuilder.Entity("SpendWise.Domain.Entities.FinancialGoal", b =>
@@ -429,19 +439,19 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("DestinationAccountId");
 
                     b.HasIndex("SourceAccountId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "CategoryId");
 
                     b.ToTable("RecurringTransactions", null, t =>
                         {
                             t.HasCheckConstraint("CK_RecurringTransactions_AccountCombination", "(\"TransactionType\" = 1\r\n    AND \"SourceAccountId\" IS NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 2\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NULL)\r\nOR\r\n(\"TransactionType\" = 3\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)");
 
                             t.HasCheckConstraint("CK_RecurringTransactions_Amount_Positive", "\"Amount_Amount\" > 0");
+
+                            t.HasCheckConstraint("CK_RecurringTransactions_CategoryCombination", "(\"TransactionType\" IN (1, 2) AND \"CategoryId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 3 AND \"CategoryId\" IS NULL)");
 
                             t.HasCheckConstraint("CK_RecurringTransactions_DifferentAccounts", "\"SourceAccountId\" IS NULL\r\nOR \"DestinationAccountId\" IS NULL\r\nOR \"SourceAccountId\" <> \"DestinationAccountId\"");
 
@@ -453,6 +463,9 @@ namespace SpendWise.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
@@ -486,13 +499,15 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.HasIndex("SourceAccountId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "CategoryId");
 
                     b.ToTable("Transactions", null, t =>
                         {
                             t.HasCheckConstraint("CK_Transactions_AccountCombination", "(\"TransactionType\" = 1\r\n    AND \"SourceAccountId\" IS NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 2\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NULL)\r\nOR\r\n(\"TransactionType\" = 3\r\n    AND \"SourceAccountId\" IS NOT NULL\r\n    AND \"DestinationAccountId\" IS NOT NULL)");
 
                             t.HasCheckConstraint("CK_Transactions_Amount_Positive", "\"Amount_Amount\" > 0");
+
+                            t.HasCheckConstraint("CK_Transactions_CategoryCombination", "(\"TransactionType\" IN (1, 2) AND \"CategoryId\" IS NOT NULL)\r\nOR\r\n(\"TransactionType\" = 3 AND \"CategoryId\" IS NULL)");
 
                             t.HasCheckConstraint("CK_Transactions_DifferentAccounts", "\"SourceAccountId\" IS NULL\r\nOR \"DestinationAccountId\" IS NULL\r\nOR \"SourceAccountId\" <> \"DestinationAccountId\"");
                         });
@@ -792,17 +807,19 @@ namespace SpendWise.Infrastructure.Migrations
 
             modelBuilder.Entity("SpendWise.Domain.Entities.Budget", b =>
                 {
-                    b.HasOne("SpendWise.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SpendWise.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SpendWise.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("UserId", "CategoryId")
+                        .HasPrincipalKey("UserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Budgets_Categories_UserId_CategoryId");
 
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
@@ -985,11 +1002,6 @@ namespace SpendWise.Infrastructure.Migrations
 
             modelBuilder.Entity("SpendWise.Domain.Entities.RecurringTransaction", b =>
                 {
-                    b.HasOne("SpendWise.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SpendWise.Domain.Entities.Account", "DestinationAccount")
                         .WithMany()
                         .HasForeignKey("DestinationAccountId")
@@ -1005,6 +1017,13 @@ namespace SpendWise.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SpendWise.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("UserId", "CategoryId")
+                        .HasPrincipalKey("UserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_RecurringTransactions_Categories_UserId_CategoryId");
 
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
@@ -1060,6 +1079,13 @@ namespace SpendWise.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SpendWise.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("UserId", "CategoryId")
+                        .HasPrincipalKey("UserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Transactions_Categories_UserId_CategoryId");
+
                     b.OwnsOne("SpendWise.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("TransactionsId")
@@ -1086,6 +1112,8 @@ namespace SpendWise.Infrastructure.Migrations
 
                     b.Navigation("Amount")
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("DestinationAccount");
 

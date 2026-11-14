@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SpendWise.Domain.Entities;
 using SpendWise.Domain.ValueObjects;
@@ -55,14 +54,17 @@ internal sealed class RecurringTransactionConfiguration
                     AND "SourceAccountId" IS NOT NULL
                     AND "DestinationAccountId" IS NOT NULL)
                 """);
+
+            table.HasCheckConstraint(
+                "CK_RecurringTransactions_CategoryCombination",
+                """
+                ("TransactionType" IN (1, 2) AND "CategoryId" IS NOT NULL)
+                OR
+                ("TransactionType" = 3 AND "CategoryId" IS NULL)
+                """);
         });
 
         builder.HasKey(rt => rt.Id);
-
-        builder.HasOne(rt => rt.User)
-            .WithMany()
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(rt => rt.TransactionName)
             .HasMaxLength(100)
@@ -94,21 +96,6 @@ internal sealed class RecurringTransactionConfiguration
             .HasColumnType("smallint")
             .IsRequired();
 
-        builder.HasOne(rt => rt.SourceAccount)
-            .WithMany()
-            .HasForeignKey(rt => rt.SourceAccountId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(rt => rt.DestinationAccount)
-            .WithMany()
-            .HasForeignKey(rt => rt.DestinationAccountId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(rt => rt.Category)
-            .WithMany()
-            .HasForeignKey(rt => rt.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.Property(rt => rt.CategoryId)
             .IsRequired(false);
 
@@ -123,5 +110,36 @@ internal sealed class RecurringTransactionConfiguration
         builder.Property(rt => rt.EndDate)
             .HasColumnType("timestamp with time zone")
             .IsRequired(false);
+
+        builder.HasOne(rt => rt.User)
+            .WithMany()
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(rt => rt.SourceAccount)
+            .WithMany()
+            .HasForeignKey(rt => rt.SourceAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(rt => rt.DestinationAccount)
+            .WithMany()
+            .HasForeignKey(rt => rt.DestinationAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(rt => rt.Category)
+            .WithMany()
+            .HasForeignKey(rt => new
+            {
+                rt.UserId,
+                rt.CategoryId
+            })
+            .HasPrincipalKey(category => new
+            {
+                category.UserId,
+                category.Id
+            })
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName(
+                "FK_RecurringTransactions_Categories_UserId_CategoryId");
     }
 }
