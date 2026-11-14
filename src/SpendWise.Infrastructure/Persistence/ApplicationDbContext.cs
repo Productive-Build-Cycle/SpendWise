@@ -14,7 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
-    
+
     public DbSet<User> DomainUsers => Set<User>();
     public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
 
@@ -28,7 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<GoalContribution> GoalContributions => Set<GoalContribution>();
 
-   public DbSet<GoalContributionRelease> GoalContributionReleases => Set<GoalContributionRelease>();
+    public DbSet<GoalContributionRelease> GoalContributionReleases => Set<GoalContributionRelease>();
 
     public DbSet<Transactions> Transactions => Set<Transactions>();
     public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>();
@@ -41,11 +41,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
-    public override Task<int> SaveChangesAsync( bool acceptAllChangesOnSuccess ,
-                                                CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
         SetAuditTimestamps();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess,cancellationToken );
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -63,11 +63,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedAtUtc = now;
+                    entry.Property<DateTime>(nameof(BaseEntity.CreatedAtUtc)).CurrentValue = now;
+                    entry.Property<DateTime?>(nameof(BaseEntity.UpdatedAtUtc)).CurrentValue = null;
                     break;
 
                 case EntityState.Modified:
-                    entry.Entity.UpdatedAtUtc = now;
+                    entry.Property<Guid>(nameof(BaseEntity.Id)).IsModified = false;
+                    entry.Property<DateTime>(nameof(BaseEntity.CreatedAtUtc)).IsModified = false;
+
+                    var updatedAt = entry.Property<DateTime?>(nameof(BaseEntity.UpdatedAtUtc));
+
+                    updatedAt.CurrentValue = now;
+                    updatedAt.IsModified = true;
                     break;
             }
         }

@@ -1,4 +1,4 @@
-﻿using SpendWise .Domain.Entities;
+﻿using SpendWise.Domain.Entities;
 using SpendWise.Domain.ValueObjects;
 using SpendWise.Domain.Enums;
 using SpendWise.Domain.Exceptions;
@@ -9,11 +9,12 @@ namespace SpendWise.Domain.Tests
     {
         [Fact]
         public void Constructor_ValidAccount_CreatesAccountSuccessfully()
-        {             // Arrange
+        {
+            // Arrange
             var userId = Guid.NewGuid();
             var accountName = "My Bank Account";
             var accountType = AccountType.Chequing;
-            var openingBalance = new Money(1000,new Currency("USD"));
+            var openingBalance = new Money(1000, new Currency("USD"));
             // Act
             var account = new Account(userId, accountName, accountType, openingBalance);
             // Assert
@@ -92,8 +93,134 @@ namespace SpendWise.Domain.Tests
             );
             var purchase = new Money(4500, new Currency("USD"));
             // Act & Assert
-            Assert.Throws<ValidationException>(
-                () => account.MakeCreditCardPurchase(purchase));
+            Assert.Throws<DomainValidationException>(() => account.MakeCreditCardPurchase(purchase));
+        }
+
+        [Fact]
+        public void Constructor_NonCreditCardWithCreditLimit_ThrowsValidationException()
+        {
+            var openingBalance = new Money(1000, new Currency("USD"));
+            var creditLimit = new Money(5000, new Currency("USD"));
+
+            Assert.Throws<DomainValidationException>(() =>
+                new Account(
+                    Guid.NewGuid(),
+                    "My Savings",
+                    AccountType.Savings,
+                    openingBalance,
+                    creditLimit));
+        }
+
+        [Fact]
+        public void Constructor_CreditCardWithoutCreditLimit_ThrowsValidationException()
+        {
+            var openingBalance = new Money(1000, new Currency("USD"));
+
+            Assert.Throws<DomainValidationException>(() =>
+                new Account(
+                    Guid.NewGuid(),
+                    "My Credit Card",
+                    AccountType.CreditCard,
+                    openingBalance));
+        }
+
+        [Fact]
+        public void Constructor_OpeningBalanceExceedsCreditLimit_ThrowsValidationException()
+        {
+            var openingBalance = new Money(6000, new Currency("USD"));
+            var creditLimit = new Money(5000, new Currency("USD"));
+
+            Assert.Throws<DomainValidationException>(() =>
+                new Account(
+                    Guid.NewGuid(),
+                    "My Credit Card",
+                    AccountType.CreditCard,
+                    openingBalance,
+                    creditLimit));
+        }
+
+        [Fact]
+        public void Withdraw_AmountExceedsBalance_ThrowsValidationException()
+        {
+            var account = new Account(
+                Guid.NewGuid(),
+                "My Savings",
+                AccountType.Savings,
+                new Money(1000, new Currency("USD")));
+
+            var withdrawal = new Money(1001, new Currency("USD"));
+
+            Assert.Throws<DomainValidationException>(() =>
+                account.Withdraw(withdrawal));
+
+            Assert.Equal(1000m, account.Balance.Amount);
+        }
+
+        [Fact]
+        public void Rename_ValidName_UpdatesAccountName()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Savings",
+                AccountType.Savings,
+                new Money(1000, new Currency("USD")));
+
+            account.Rename("  New Name  ");
+
+            Assert.Equal("New Name", account.AccountName);
+        }
+
+        [Fact]
+        public void Rename_EmptyName_ThrowsArgumentException()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Savings",
+                AccountType.Savings,
+                new Money(1000, new Currency("USD")));
+
+            Assert.Throws<ArgumentException>(() => account.Rename(" "));
+        }
+
+        [Fact]
+        public void UpdateCreditLimit_ValidLimit_UpdatesCreditLimit()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Credit Card",
+                AccountType.CreditCard,
+                new Money(1000, new Currency("USD")),
+                new Money(5000, new Currency("USD")));
+
+            account.UpdateCreditLimit(new Money(6000, new Currency("USD")));
+
+            Assert.Equal(6000m, account.CreditLimit!.Amount);
+        }
+
+        [Fact]
+        public void UpdateCreditLimit_BelowOutstandingBalance_ThrowsValidationException()
+        {
+            var account = new Account(
+                Guid.NewGuid(), "Credit Card",
+                AccountType.CreditCard,
+                new Money(1000, new Currency("USD")),
+                new Money(5000, new Currency("USD")));
+
+            Assert.Throws<DomainValidationException>(() =>
+                account.UpdateCreditLimit(new Money(500, new Currency("USD"))));
+        }
+        
+        [Fact]
+        public void Constructor_OpeningBalanceAndBalance_UsesSeparateInstances()
+        {
+            var openingBalance = new Money(1000, new Currency("USD"));
+
+            var account = new Account(
+                Guid.NewGuid(),
+                "My Savings",
+                AccountType.Savings,
+                openingBalance);
+
+            Assert.NotSame(account.OpeningBalance, account.Balance);
+
+            Assert.Equal(account.OpeningBalance.Amount, account.Balance.Amount);
         }
     }
 }

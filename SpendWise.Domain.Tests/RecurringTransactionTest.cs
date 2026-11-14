@@ -19,7 +19,7 @@ namespace SpendWise.Domain.Tests
             var nextOccurrenceDate = DateTime.UtcNow.AddMonths(1);
             var endDate = DateTime.UtcNow.AddYears(1);
             //Act
-            var exception= Assert.Throws<ValidationException>(() => new RecurringTransaction(
+            var exception= Assert.Throws<DomainValidationException>(() => new RecurringTransaction(
                                                      Guid.NewGuid(),
                                                      "Internet Bill",
                                                      money,
@@ -43,7 +43,7 @@ namespace SpendWise.Domain.Tests
             var startDate = DateTime.UtcNow;
             var nextOccurrenceDate = DateTime.UtcNow.AddMonths(-1);
             //Act
-            var exception = Assert.Throws<ValidationException>(() => new RecurringTransaction(
+            var exception = Assert.Throws<DomainValidationException>(() => new RecurringTransaction(
                                                                  Guid.NewGuid(),
                                                                  "Internet Bill",
                                                                   money,
@@ -68,7 +68,7 @@ namespace SpendWise.Domain.Tests
             var nextOccurrenceDate = DateTime.UtcNow.AddMonths(1);
             var endDate = DateTime.UtcNow.AddDays(-1);
             //Act
-            var exception = Assert.Throws<ValidationException>(() => new RecurringTransaction(
+            var exception = Assert.Throws<DomainValidationException>(() => new RecurringTransaction(
                                                              Guid.NewGuid(),
                                                              "Internet Bill",
                                                              money,
@@ -89,7 +89,7 @@ namespace SpendWise.Domain.Tests
             //Arrange
             var money = new Money(5000, new Currency("USD"));
             //Act
-            var exception =Assert.Throws<ValidationException>(()=> new RecurringTransaction(
+            var exception =Assert.Throws<DomainValidationException>(()=> new RecurringTransaction(
                              Guid.NewGuid(),
                              "Salary",
                               money,

@@ -1,11 +1,23 @@
 ﻿namespace SpendWise.Domain.Common;
 
-// Base class for all entities. Audit timestamps are set automatically by ApplicationDbContext.
 public abstract class BaseEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    protected BaseEntity()
+    {
+        Id = Guid.NewGuid();
+    }
 
-    public DateTime CreatedAtUtc { get; set; }
+    protected BaseEntity(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Entity ID cannot be empty.", nameof(id));
 
-    public DateTime? UpdatedAtUtc { get; set; }
+        Id = id;
+    }
+
+    public Guid Id { get; private set; }
+
+    public DateTime CreatedAtUtc { get; private set; }
+
+    public DateTime? UpdatedAtUtc { get; private set; }
 }

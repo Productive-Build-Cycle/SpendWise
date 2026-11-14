@@ -36,18 +36,18 @@ namespace SpendWise.Domain.Entities
             }
             if(goalName.Length > 100)
             {
-                throw new ValidationException("Goal name cannot exceed 100 characters.");
+                throw new DomainValidationException("Goal name cannot exceed 100 characters.");
             }
 
            ArgumentNullException.ThrowIfNull(targetAmount, nameof(targetAmount));
             if (targetAmount.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                                 "Target amount must be greater than zero." );
             }
             if (targetAmount.Currency.Code != "USD")
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     $"Financial goal currency in this version is only USD .");
             }
             if (targetDate <=DateOnly.FromDateTime(DateTime.UtcNow))
@@ -64,7 +64,7 @@ namespace SpendWise.Domain.Entities
         {
             if (IsArchived)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Cannot add a contribution to an archived goal.");
             }
 
@@ -72,13 +72,13 @@ namespace SpendWise.Domain.Entities
 
             if (contribution.FinancialGoalId != Id)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "This contribution belongs to another financial goal.");
             }
 
             if (_contributions.Any(c => c.Id == contribution.Id))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "This contribution already exists in this financial goal.");
             }
 
@@ -88,7 +88,7 @@ namespace SpendWise.Domain.Entities
         {
             if (IsArchived)
             {
-                throw new ValidationException("Financial goal is already archived.");
+                throw new DomainValidationException("Financial goal is already archived.");
             }
 
             ArgumentNullException.ThrowIfNull(remainingAllocateAmount);
@@ -102,7 +102,7 @@ namespace SpendWise.Domain.Entities
 
             if (remainingAllocateAmount.Amount > 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Cannot archive the financial goal with remaining allocated amount.");
             }
 

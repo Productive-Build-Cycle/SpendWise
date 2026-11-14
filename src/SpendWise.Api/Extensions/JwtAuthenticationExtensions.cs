@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SpendWise.Infrastructure.Authentication.Jwt;
 
@@ -62,7 +63,7 @@ public static class JwtAuthenticationExtensions
 
                         var validIssuedAt =
                             long.TryParse(iat, NumberStyles.None, CultureInfo.InvariantCulture, out var issuedAt)
-                            &&  issuedAt > 0
+                            && issuedAt > 0
                             && issuedAt <= DateTimeOffset.UtcNow.ToUnixTimeSeconds() + jwt.ClockSkewSeconds;
 
                         if (!validSubject || !validJti || !validIssuedAt)
@@ -71,6 +72,37 @@ public static class JwtAuthenticationExtensions
                         }
 
                         return Task.CompletedTask;
+                    },
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+                        var httpContext = context.HttpContext;
+                        if (httpContext.Response.HasStarted)
+                            return;
+                        httpContext.Response.StatusCode =
+                            StatusCodes.Status401Unauthorized;
+                        httpContext.Response.Headers.CacheControl = "no-store";
+                        httpContext.Response.Headers.Pragma = "no-cache";
+                        httpContext.Response.Headers.WWWAuthenticate = "Bearer";
+                        var problem = new ProblemDetails
+                        {
+                            Status = StatusCodes.Status401Unauthorized,
+                            Title = "Authentication required.",
+                            Detail = "A valid access token is required.",
+                            Instance = httpContext.Request.Path,
+                            Extensions =
+                            {
+                                ["traceId"] = httpContext.TraceIdentifier
+                            }
+                        };
+
+                        httpContext.Response.ContentType = "application/problem+json";
+
+                        await httpContext.Response.WriteAsJsonAsync(
+                            problem,
+                            contentType: "application/problem+json",
+                            options: null,
+                            cancellationToken: httpContext.RequestAborted);
                     }
                 };
             });

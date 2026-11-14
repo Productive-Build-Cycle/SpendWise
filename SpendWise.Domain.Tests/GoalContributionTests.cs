@@ -28,7 +28,7 @@ namespace SpendWise.Domain.Tests
                 releaseDate: DateOnly.FromDateTime(DateTime.UtcNow)
             );
             // Act & Assert
-            Assert.Throws<ValidationException>(() =>
+            Assert.Throws<DomainValidationException>(() =>
             {
                 contribution.AddRelease(secoundRelease);
             });

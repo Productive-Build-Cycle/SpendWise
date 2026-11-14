@@ -33,7 +33,7 @@ namespace SpendWise.Domain.Tests
             var description = "Test transaction";
             var dateTime = DateTime.UtcNow;
             //Act & Assert
-            Assert.Throws<ValidationException>(() => new Transactions(null,
+            Assert.Throws<DomainValidationException>(() => new Transactions(null,
                                                                 null,
                                                                TransactionTypes.Income,
                                                                Guid.NewGuid(),
@@ -50,7 +50,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Transfer;
             var amount=new Money(100,new Currency("USD"));
             //Act & Assert
-            Assert.Throws<ValidationException>(()=> new Transactions(accountId,
+            Assert.Throws<DomainValidationException>(()=> new Transactions(accountId,
                                                                      accountId,
                                                                      transactionType,
                                                                      Guid.NewGuid(),
@@ -66,7 +66,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Transfer;
             var amount = new Money(100, new Currency("USD"));
             //Act & Assert
-            Assert.Throws<ValidationException>(() => new Transactions(null,
+            Assert.Throws<DomainValidationException>(() => new Transactions(null,
                                                                      null,
                                                                      transactionType,
                                                                      Guid.NewGuid(),
@@ -82,7 +82,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Income;
             var amount = new Money(0, new Currency("USD"));
             //Act & Assert
-            Assert.Throws<ValidationException>(() => new Transactions(Guid.NewGuid(),
+            Assert.Throws<DomainValidationException>(() => new Transactions(Guid.NewGuid(),
                                                                      Guid.NewGuid(),
                                                                      transactionType,
                                                                      Guid.NewGuid(),
@@ -98,7 +98,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Transfer;
             var money=new Money(500, new Currency("USD"));
             //Act & Assert
-            Assert.Throws<ValidationException>(() => new Transactions(Guid.NewGuid(),
+            Assert.Throws<DomainValidationException>(() => new Transactions(Guid.NewGuid(),
                                                                      Guid.NewGuid(),
                                                                      transactionType,
                                                                      Guid.NewGuid(),
@@ -114,7 +114,7 @@ namespace SpendWise.Domain.Tests
             var transaction = TransactionTypes.Income;
             var money = new Money(500, new Currency("USD"));
             //Act&Assert
-            Assert.Throws<ValidationException>(() => new Transactions(
+            Assert.Throws<DomainValidationException>(() => new Transactions(
                                                        Guid.NewGuid(),
                                                        null,
                                                        transaction,
@@ -130,7 +130,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Expense;
             var money= new Money(500, new Currency("USD"));
             //Act& Asseert
-            Assert.Throws<ValidationException>(() => new Transactions(
+            Assert.Throws<DomainValidationException>(() => new Transactions(
                                                      null,
                                                      Guid.NewGuid(),
                                                      transactionType,
@@ -147,7 +147,7 @@ namespace SpendWise.Domain.Tests
             var transactionType = TransactionTypes.Transfer;
             var money = new Money(500, new Currency("USD"));
             //Act & Assert
-            Assert.Throws<ValidationException>(() => new Transactions(
+            Assert.Throws<DomainValidationException>(() => new Transactions(
                                                      null,
                                                      Guid.NewGuid(),
                                                      transactionType,

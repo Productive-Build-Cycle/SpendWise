@@ -24,7 +24,7 @@ namespace SpendWise.Domain.Tests
             );
             goal.AddContribution(contribution);
             //Act & Assert
-            Assert.Throws<ValidationException>(() => goal.AddContribution(contribution));
+            Assert.Throws<DomainValidationException>(() => goal.AddContribution(contribution));
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace SpendWise.Domain.Tests
             var remainingAmount = new Money(0, new Currency("USD"));
             goal.Archive(remainingAmount);
             // Act & Assert
-            Assert.Throws<ValidationException>(() => goal.AddContribution(contribution));
+            Assert.Throws<DomainValidationException>(() => goal.AddContribution(contribution));
         }
         [Fact]
         public void Archive_FinancialGoalWithRemainingAmount_ThrowsValidationException()
@@ -67,7 +67,7 @@ namespace SpendWise.Domain.Tests
                 Guid.NewGuid()//AccountId
             );
             // Act & Assert
-            Assert.Throws<ValidationException>(() => goal.AddContribution(contribution));
+            Assert.Throws<DomainValidationException>(() => goal.AddContribution(contribution));
         }
         [Fact]
         public void Archive_NoRemainingAmount_ArchivesSuccessfully()
@@ -98,7 +98,7 @@ namespace SpendWise.Domain.Tests
             var remainingAmount = new Money(0, new Currency("USD"));
             goal.Archive(remainingAmount);
             // Act & Assert
-            Assert.Throws<ValidationException>(() => goal.Archive(remainingAmount));
+            Assert.Throws<DomainValidationException>(() => goal.Archive(remainingAmount));
         }
         [Fact]
         public void Archive_WithRemainingAmount_ThrowsValidationException()
@@ -114,7 +114,7 @@ namespace SpendWise.Domain.Tests
             var remainingAmount = new Money(500, new Currency("USD"));
 
             // Act & Assert
-            Assert.Throws<ValidationException>(
+            Assert.Throws<DomainValidationException>(
                 () => goal.Archive(remainingAmount));
         }
     }

@@ -21,6 +21,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(assembly);
 
             // Behaviors run in the order they are registered: logging wraps validation.
+            cfg.AddOpenBehavior(typeof(DomainExceptionTranslationBehavior<,>));
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });

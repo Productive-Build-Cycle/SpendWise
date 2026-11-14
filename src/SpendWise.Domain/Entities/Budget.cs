@@ -33,11 +33,11 @@ namespace SpendWise.Domain.Entities
             ArgumentNullException.ThrowIfNull(amount, nameof(amount));
             if (amount.Amount <= 0)
             {
-                throw new ValidationException("Amount must be a positive value." );
+                throw new DomainValidationException("Amount must be a positive value." );
             }
             if (startDate >= endDate)
             {
-                throw new ValidationException("Start date must be before end date.");
+                throw new DomainValidationException("Start date must be before end date.");
             }
             UserId = userId;
             CategoryId = categoryId;

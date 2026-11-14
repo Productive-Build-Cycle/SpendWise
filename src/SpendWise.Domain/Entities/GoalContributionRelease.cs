@@ -37,17 +37,17 @@ namespace SpendWise.Domain.Entities
             ArgumentNullException.ThrowIfNull(releaseAmount, nameof(releaseAmount));
             if(releaseAmount.Currency.Code != "USD")
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Release amount must be in USD.");
             };
             if (releaseAmount.Amount <= 0)
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                     "Release amount must be greater than zero.");
             }
             if (releaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                throw new ValidationException(
+                throw new DomainValidationException(
                    "Release date cannot be in the future.");
             }
             GoalContributionId = goalContributionId;
