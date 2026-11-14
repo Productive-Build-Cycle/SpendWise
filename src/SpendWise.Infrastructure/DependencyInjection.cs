@@ -44,18 +44,17 @@ public static class DependencyInjection
         var refreshTokenOptions =
             configuration.GetSection(RefreshTokenOptions.SectionName).Get<RefreshTokenOptions>() ??
             new RefreshTokenOptions();
+
         refreshTokenOptions.Validate();
         services.AddSingleton(refreshTokenOptions);
 
-        refreshTokenOptions.Validate();
-
-        services.AddSingleton(refreshTokenOptions);
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITransactionManager, EfTransactionManager>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-        
+
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 
