@@ -147,11 +147,44 @@ A production-ready Dockerfile and docker-compose configuration will be added to 
 #### Transactions
 - `GET /api/transactions` — List transactions (paginated, filterable)
 - `GET /api/transactions/{transactionId}` — Retrieve transaction
-- `POST /api/transactions` — Record transaction
+- `POST /api/transactions` — Record transaction (`Income`, `Expense` or `Transfer`)
 - `POST /api/transactions/income` — Record income
 - `POST /api/transactions/expense` — Record expense
 
-**Query Parameters:** `pageNumber`, `pageSize`, `fromDate`, `toDate`, `categoryId`, `type`
+**Query Parameters:** `pageNumber` (default `1`), `pageSize` (default `20`, max `100`), `fromDate`, `toDate`, `categoryId`, `type` (`Income`, `Expense` or `Transfer`)
+
+The list is ordered from the newest transaction to the oldest and returns `items`, `pageNumber`, `pageSize`, `totalCount` and `totalPages`.
+
+**Request bodies:**
+
+```json
+// POST /api/transactions
+{
+  "transactionType": "Transfer",
+  "sourceAccountId": "00000000-0000-0000-0000-000000000000",
+  "destinationAccountId": "00000000-0000-0000-0000-000000000000",
+  "categoryId": null,
+  "amount": 100.00,
+  "description": "Move to savings",
+  "transactionDate": "2026-11-01T10:00:00Z"
+}
+
+// POST /api/transactions/income
+{ "destinationAccountId": "...", "categoryId": "...", "amount": 2500.00, "description": "Salary", "transactionDate": null }
+
+// POST /api/transactions/expense
+{ "sourceAccountId": "...", "categoryId": "...", "amount": 42.50, "description": "Groceries", "transactionDate": null }
+```
+
+**Behavior:**
+
+- `transactionDate` is optional and defaults to the current UTC time; it cannot be in the future.
+- Income needs a destination account and an income category, expense needs a source account and an expense category, and a transfer needs both accounts and no category.
+- Accounts and categories must belong to the current user, otherwise `404` is returned.
+- Creating a transaction updates account balances in the same save: income increases the destination, expense decreases the source, and a transfer does both. Insufficient funds (or a credit limit that would be exceeded) is rejected with `400` and nothing is saved.
+- For credit cards the balance is the outstanding debt, so spending from a card increases it and money going into a card pays it down.
+- All amounts are in USD with at most two decimal places.
+- Transactions are append-only for now: there are no update or delete endpoints.
 
 #### Transfers
 - `GET /api/transfers` — List transfers
