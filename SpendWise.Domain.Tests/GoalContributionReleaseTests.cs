@@ -9,7 +9,7 @@ namespace SpendWise.Domain.Tests
         public void Constructor_ValidRelease_CreateReleaseSuccessfully()
         {// Arrange
             var goalContributionId = Guid.NewGuid();
-            var releaseAmount = new Money(100,new Currency("USD"));
+            var releaseAmount = new Money(100, new Currency("USD"));
             var releaseDate = DateOnly.FromDateTime(DateTime.UtcNow);
             var transactionId = Guid.NewGuid();
             // Act

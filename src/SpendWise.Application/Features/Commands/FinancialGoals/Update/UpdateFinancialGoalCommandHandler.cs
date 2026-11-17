@@ -25,11 +25,11 @@ namespace SpendWise.Application.Features.Commands.FinancialGoals.Update
             _userRepository = userRepository;
             _userLocalDateProvider = userLocalDateProvider;
         }
-        public async Task<Unit>Handle(UpdateFinancialGoalCommand request,
+        public async Task<Unit> Handle(UpdateFinancialGoalCommand request,
             CancellationToken cancellationToken)
         {
             var userId = _currentUser.UserId;
-            var user = await _userRepository.GetUserByIdAsync(userId,cancellationToken);
+            var user = await _userRepository.GetUserByIdAsync(userId, cancellationToken);
             if (user == null)
             {
                 throw new NotFoundException("User was not founded");

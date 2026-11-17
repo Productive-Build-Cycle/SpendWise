@@ -11,5 +11,5 @@ namespace SpendWise.Application.Features.Commands.FinancialGoals.Update
         decimal TargetAmount,
         string CurrencyCode,
         DateOnly TargetDate) : IRequest<Unit>;
-    
+
 }

@@ -38,7 +38,7 @@ app.UseHttpsRedirection();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().AllowAnonymous();
-    
+
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(

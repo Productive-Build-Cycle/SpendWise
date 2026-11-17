@@ -45,7 +45,7 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
             return Unit.Value;
 
 
-        for (var attempt = 0;; attempt++)
+        for (var attempt = 0; ; attempt++)
         {
             try
             {

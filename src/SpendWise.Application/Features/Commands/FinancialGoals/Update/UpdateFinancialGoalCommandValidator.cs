@@ -17,7 +17,7 @@ namespace SpendWise.Application.Features.Commands.FinancialGoals.Update
             RuleFor(x => x.CurrencyCode)
                 .NotEmpty()
                 .Matches("^[A-Za-z]{3}$");
-           
+
         }
     }
 }

@@ -43,17 +43,17 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
             .HasDatabaseName("UX_RefreshTokens_TokenHash");
 
         builder.HasIndex(token => new
-            {
-                token.FamilyId,
-                token.ExpiresAtUtc
-            })
+        {
+            token.FamilyId,
+            token.ExpiresAtUtc
+        })
             .HasDatabaseName("IX_RefreshTokens_FamilyId_ExpiresAtUtc");
 
         builder.HasIndex(token => new
-            {
-                token.UserId,
-                token.ExpiresAtUtc
-            })
+        {
+            token.UserId,
+            token.ExpiresAtUtc
+        })
             .HasDatabaseName("IX_RefreshTokens_UserId_ExpiresAtUtc");
 
         builder.HasIndex(token => token.ExpiresAtUtc)
