@@ -28,17 +28,18 @@ public sealed class TransactionRepository : ITransactionRepository
             .AsNoTracking()
             .Where(t => t.UserId == userId);
 
-        if (fromDate.HasValue)
-            query = query.Where(t => t.TransactionDate >= fromDate.Value);
+        // Pattern matching copies each value into a non-nullable local, so the lambdas never read a nullable.
+        if (fromDate is { } fromValue)
+            query = query.Where(t => t.TransactionDate >= fromValue);
 
-        if (toDate.HasValue)
-            query = query.Where(t => t.TransactionDate <= toDate.Value);
+        if (toDate is { } toValue)
+            query = query.Where(t => t.TransactionDate <= toValue);
 
-        if (categoryId.HasValue)
-            query = query.Where(t => t.CategoryId == categoryId.Value);
+        if (categoryId is { } categoryValue)
+            query = query.Where(t => t.CategoryId == categoryValue);
 
-        if (transactionType.HasValue)
-            query = query.Where(t => t.TransactionType == transactionType.Value);
+        if (transactionType is { } typeValue)
+            query = query.Where(t => t.TransactionType == typeValue);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
