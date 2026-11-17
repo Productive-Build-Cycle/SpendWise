@@ -18,10 +18,10 @@ namespace SpendWise.Infrastructure.Persistence.Configurations
             builder.HasKey(category => category.Id);
 
             builder.HasAlternateKey(category => new
-                {
-                    category.UserId,
-                    category.Id
-                })
+            {
+                category.UserId,
+                category.Id
+            })
                 .HasName("AK_Categories_UserId_Id");
 
             builder.Property(category => category.CategoryName)

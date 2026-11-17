@@ -22,13 +22,13 @@ public sealed class CreateAccountCommandValidator : AbstractValidator<CreateAcco
             .GreaterThanOrEqualTo(0);
 
         RuleFor(x => x.CreditLimit)
-            .Must((command, limit) => 
+            .Must((command, limit) =>
                 !string.Equals(command.AccountType, nameof(AccountType.CreditCard), StringComparison.OrdinalIgnoreCase)
                 || limit.HasValue)
             .WithMessage("Credit limit is required for credit card accounts.")
 
-            .Must((command, limit) => 
-                string.Equals(command.AccountType, nameof(AccountType.CreditCard),StringComparison.OrdinalIgnoreCase)
+            .Must((command, limit) =>
+                string.Equals(command.AccountType, nameof(AccountType.CreditCard), StringComparison.OrdinalIgnoreCase)
                 || !limit.HasValue)
             .WithMessage("Credit limit is only allowed for credit card accounts.")
 

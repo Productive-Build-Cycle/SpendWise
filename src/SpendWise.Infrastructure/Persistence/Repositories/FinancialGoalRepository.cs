@@ -20,7 +20,7 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
                  g => g.UserId == userId && g.Id == financialGoalId,
                  cancellationToken);
         }
-        
+
         public void Add(FinancialGoal financialGoal)
         {
             _dbContext.FinancialGoals.Add(financialGoal);

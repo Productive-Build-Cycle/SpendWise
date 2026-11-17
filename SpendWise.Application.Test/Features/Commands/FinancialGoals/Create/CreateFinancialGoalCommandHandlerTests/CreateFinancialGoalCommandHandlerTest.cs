@@ -52,7 +52,7 @@ namespace SpendWise.Application.Test.Features.Commands.FinancialGoals.Create.Cre
             _dbContextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
             //Act
-            var result = await _handler.Handle(command,CancellationToken.None);
+            var result = await _handler.Handle(command, CancellationToken.None);
             //Assert
             Assert.NotEqual(Guid.Empty, result);
         }

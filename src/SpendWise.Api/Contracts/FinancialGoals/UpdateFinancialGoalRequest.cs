@@ -5,5 +5,5 @@
         decimal TargetAmount,
         string CurrencyCode,
         DateOnly TargetDate);
-    
+
 }

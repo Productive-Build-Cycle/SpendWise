@@ -54,7 +54,7 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException("Cannot update an archived financial goal !");
             }
             goalName = ValidateGoalName(goalName);
-           
+
             ValidateTargetAmount(targetAmount);
 
             ValidateTargetDate(targetDate, currentDate);

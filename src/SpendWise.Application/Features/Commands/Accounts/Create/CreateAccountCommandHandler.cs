@@ -38,7 +38,7 @@ public sealed class CreateAccountCommandHandler : IRequestHandler<CreateAccountC
             throw new DomainValidationException("Invalid account type.");
 
         var accountType = Enum.Parse<AccountType>(typeName);
-        
+
         var account = new Account(
             _currentUser.UserId,
             request.AccountName,
