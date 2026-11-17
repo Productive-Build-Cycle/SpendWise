@@ -113,5 +113,70 @@ namespace SpendWise.Domain.Entities
             TransactionDate = transactionDate;
             CategoryId = categoryId;
         }
+
+        /// <summary>
+        /// Applies this transaction to the given accounts so that balances stay consistent with it.
+        /// Income increases the destination balance, expense decreases the source balance,
+        /// and a transfer does both.
+        /// For credit cards the balance is the outstanding debt, so a debit is a purchase
+        /// and a credit is a payment.
+        /// </summary>
+        public void ApplyToAccounts(Account? sourceAccount, Account? destinationAccount)
+        {
+            if (SourceAccountId.HasValue)
+            {
+                ArgumentNullException.ThrowIfNull(sourceAccount, nameof(sourceAccount));
+                EnsureAccountMatches(sourceAccount, SourceAccountId.Value, "Source");
+            }
+            else if (sourceAccount is not null)
+            {
+                throw new DomainValidationException("This transaction does not have a source account.");
+            }
+
+            if (DestinationAccountId.HasValue)
+            {
+                ArgumentNullException.ThrowIfNull(destinationAccount, nameof(destinationAccount));
+                EnsureAccountMatches(destinationAccount, DestinationAccountId.Value, "Destination");
+            }
+            else if (destinationAccount is not null)
+            {
+                throw new DomainValidationException("This transaction does not have a destination account.");
+            }
+
+            // The debit runs first so a failed withdrawal never leaves a partially applied transfer.
+            if (sourceAccount is not null)
+                Debit(sourceAccount, Amount);
+
+            if (destinationAccount is not null)
+                Credit(destinationAccount, Amount);
+        }
+
+        private void EnsureAccountMatches(Account account, Guid expectedAccountId, string role)
+        {
+            if (account.Id != expectedAccountId)
+                throw new DomainValidationException($"{role} account does not match the transaction.");
+
+            if (account.UserId != UserId)
+                throw new DomainValidationException($"{role} account must belong to the transaction's user.");
+
+            if (account.Balance.Currency != Amount.Currency)
+                throw new DomainValidationException($"{role} account currency must match the transaction currency.");
+        }
+
+        private static void Debit(Account account, Money amount)
+        {
+            if (account.AccountType == AccountType.CreditCard)
+                account.MakeCreditCardPurchase(amount);
+            else
+                account.Withdraw(amount);
+        }
+
+        private static void Credit(Account account, Money amount)
+        {
+            if (account.AccountType == AccountType.CreditCard)
+                account.PayCreditCard(amount);
+            else
+                account.Deposit(amount);
+        }
     }
 }
