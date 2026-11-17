@@ -5,10 +5,10 @@ using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Domain.Entities
 {
-    public class GoalContribution:BaseEntity
+    public class GoalContribution : BaseEntity
     {
-       
-        public Guid FinancialGoalId { get;private set; }
+
+        public Guid FinancialGoalId { get; private set; }
         public FinancialGoal FinancialGoal { get; private set; } = null!;
         public Money ContributionAmount { get; private set; }
         public DateOnly ContributionDate { get; private set; }
@@ -51,7 +51,7 @@ namespace SpendWise.Domain.Entities
             {
                 throw new DomainValidationException("Contribution amount must be greater than zero.");
             }
-            if(contributionAmount.Currency.Code != "USD")
+            if (contributionAmount.Currency.Code != "USD")
             {
                 throw new DomainValidationException("Contribution amount must be in USD.");
             }
@@ -72,7 +72,7 @@ namespace SpendWise.Domain.Entities
         public void AddRelease(GoalContributionRelease release)
         {
             ArgumentNullException.ThrowIfNull(release);
-            if(release.GoalContributionId != Id)
+            if (release.GoalContributionId != Id)
             {
                 throw new DomainValidationException(
                     "The release does not belong to this contribution.");
@@ -82,9 +82,9 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "This release has already been added to the contribution.");
             }
-            
+
             ArgumentNullException.ThrowIfNull(release.ReleaseAmount, nameof(release.ReleaseAmount));
-            if(release.ReleaseAmount.Currency.Code != ContributionAmount.Currency.Code)
+            if (release.ReleaseAmount.Currency.Code != ContributionAmount.Currency.Code)
             {
                 throw new DomainValidationException(
                     "The release amount currency does not match the contribution amount currency.");
@@ -94,7 +94,7 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "The release amount must be greater than zero.");
             }
-            
+
             if (release.ReleaseAmount.Amount > RemainingAmount.Amount)
 
             {
@@ -106,7 +106,7 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "The release date cannot be earlier than the contribution date.");
             }
-            if(release.ReleaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            if (release.ReleaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
             {
                 throw new DomainValidationException(
                     "The release date cannot be in the future.");

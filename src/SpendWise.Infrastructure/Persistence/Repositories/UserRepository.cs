@@ -11,7 +11,7 @@ public class UserRepository : IUserRepository
     {
         _dbContext = dbContext;
     }
-    
+
     public void Add(User user)
     {
         _dbContext.DomainUsers.Add(user);

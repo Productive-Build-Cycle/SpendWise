@@ -4,12 +4,12 @@ using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Domain.Entities
 {
-   public class FinancialGoal:BaseEntity
+    public class FinancialGoal : BaseEntity
     {
         public Guid UserId { get; private set; }
         public User User { get; private set; } = null!;
         public string GoalName { get; private set; } = string.Empty;
-        public Money TargetAmount { get; private set; } 
+        public Money TargetAmount { get; private set; }
         public DateOnly TargetDate { get; private set; }
         private readonly List<GoalContribution> _contributions = new();
         public IReadOnlyCollection<GoalContribution> Contributions => _contributions.AsReadOnly();
@@ -20,9 +20,9 @@ namespace SpendWise.Domain.Entities
         {
             TargetAmount = null!;
         }
-        public FinancialGoal(Guid userId, 
-                             string goalName, 
-                             Money targetAmount, 
+        public FinancialGoal(Guid userId,
+                             string goalName,
+                             Money targetAmount,
                              DateOnly targetDate
                             )
         {
@@ -34,23 +34,23 @@ namespace SpendWise.Domain.Entities
             {
                 throw new ArgumentException("Goal name cannot be null or empty.", nameof(goalName));
             }
-            if(goalName.Length > 100)
+            if (goalName.Length > 100)
             {
                 throw new DomainValidationException("Goal name cannot exceed 100 characters.");
             }
 
-           ArgumentNullException.ThrowIfNull(targetAmount, nameof(targetAmount));
+            ArgumentNullException.ThrowIfNull(targetAmount, nameof(targetAmount));
             if (targetAmount.Amount <= 0)
             {
                 throw new DomainValidationException(
-                                "Target amount must be greater than zero." );
+                                "Target amount must be greater than zero.");
             }
             if (targetAmount.Currency.Code != "USD")
             {
                 throw new DomainValidationException(
                     $"Financial goal currency in this version is only USD .");
             }
-            if (targetDate <=DateOnly.FromDateTime(DateTime.UtcNow))
+            if (targetDate <= DateOnly.FromDateTime(DateTime.UtcNow))
             {
                 throw new ArgumentException("Target date must be in the future.", nameof(targetDate));
             }

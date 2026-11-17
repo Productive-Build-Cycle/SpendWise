@@ -20,13 +20,13 @@ internal sealed class AuthOperationTransformer : IOpenApiOperationTransformer
         operation.Security ??= new List<OpenApiSecurityRequirement>();
 
         operation.Security.Add(new OpenApiSecurityRequirement
-            {
-                [
+        {
+            [
                     new OpenApiSecuritySchemeReference(
                         "Bearer",
                         context.Document)
                 ] = []
-            });
+        });
 
         return Task.CompletedTask;
     }

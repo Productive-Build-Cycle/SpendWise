@@ -106,7 +106,7 @@ public sealed class ExceptionHandlingMiddleware
                 Title = "Resource conflict.",
                 Detail = ex.Message
             };
-            
+
             await WriteProblemAsync(
                 context,
                 problem,

@@ -12,13 +12,13 @@ namespace SpendWise.Domain.Tests
             var goal = new FinancialGoal(
                 Guid.NewGuid(),
                 "Buy a car",
-                new Money(10000,new Currency("USD")),
+                new Money(10000, new Currency("USD")),
                  DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))
 
                 );
             var contribution = new GoalContribution(
                 goal.Id,
-                new Money(1000,new Currency("USD")),
+                new Money(1000, new Currency("USD")),
                 DateOnly.FromDateTime(DateTime.UtcNow),
                 Guid.NewGuid()//AccountId
             );

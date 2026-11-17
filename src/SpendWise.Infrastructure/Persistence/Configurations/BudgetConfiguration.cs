@@ -45,7 +45,7 @@ internal class BudgetConfiguration : IEntityTypeConfiguration<Budget>
         builder.Property(budget => budget.EndDate)
             .HasColumnType("date")
             .IsRequired();
-        
+
         builder.HasOne(budget => budget.User)
             .WithMany()
             .HasForeignKey(budget => budget.UserId)

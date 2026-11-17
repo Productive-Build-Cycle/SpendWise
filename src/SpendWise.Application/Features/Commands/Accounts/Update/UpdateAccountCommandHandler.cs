@@ -15,7 +15,7 @@ public sealed class UpdateAccountCommandHandler
     private readonly ICurrentUser _currentUser;
 
     public UpdateAccountCommandHandler(
-        IAccountRepository accountRepository, 
+        IAccountRepository accountRepository,
         IApplicationDbContext dbContext,
         ICurrentUser currentUser)
     {

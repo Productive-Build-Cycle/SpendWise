@@ -9,7 +9,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
 {
     private const int TokenByteLength = 32;
     private const int TokenTextLength = 43;
-    
+
     private readonly RefreshTokenOptions _options;
 
     public RefreshTokenService(RefreshTokenOptions options)
@@ -18,7 +18,7 @@ public sealed class RefreshTokenService : IRefreshTokenService
         _options = options;
     }
 
-    public TimeSpan Lifetime  => _options.Lifetime;
+    public TimeSpan Lifetime => _options.Lifetime;
 
     public RefreshTokenMaterial Generate()
     {

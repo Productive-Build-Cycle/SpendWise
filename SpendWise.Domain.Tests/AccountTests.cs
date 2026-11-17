@@ -206,7 +206,7 @@ namespace SpendWise.Domain.Tests
             Assert.Throws<DomainValidationException>(() =>
                 account.UpdateCreditLimit(new Money(500, new Currency("USD"))));
         }
-        
+
         [Fact]
         public void Constructor_OpeningBalanceAndBalance_UsesSeparateInstances()
         {
