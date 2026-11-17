@@ -1,5 +1,4 @@
-﻿using SpendWise.Domain.Exceptions;
-
+﻿
 namespace SpendWise.Application.Common.Exceptions;
 
 public class NotFoundException : Exception

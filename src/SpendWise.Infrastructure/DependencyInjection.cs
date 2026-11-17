@@ -56,6 +56,8 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+        services.AddScoped<IFinancialGoalRepository, FinancialGoalRepository>();
+
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName)
@@ -70,6 +72,8 @@ public static class DependencyInjection
         services.AddSingleton<IJwtKeyProvider>(_ => jwtKeyProvider);
 
         services.AddSingleton<IJwtService, JwtService>();
+
+
 
         return services;
     }
