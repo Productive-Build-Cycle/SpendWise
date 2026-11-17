@@ -1,0 +1,90 @@
+name: Deploy release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing version tag to deploy (for example v1.2.3)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Validate deployment inputs
+        env:
+          IMAGE_TAG: ${{ github.event.release.tag_name || inputs.image_tag }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          [[ "$IMAGE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || {
+            echo "Invalid version tag"
+            exit 1
+          }
+          [[ "$DOCKERHUB_IMAGE" =~ ^[a-z0-9._-]+/[a-z0-9._-]+$ ]] || {
+            echo "Invalid Docker Hub image name"
+            exit 1
+          }
+          [[ "$DEPLOY_PATH" =~ ^/[a-zA-Z0-9/_-]+$ ]] || {
+            echo "DEPLOY_PATH must be an absolute path using only letters, numbers, /, _ or -"
+            exit 1
+          }
+          [[ "$DEPLOY_USER" =~ ^[a-zA-Z0-9._-]+$ ]] || {
+            echo "Invalid deployment user"
+            exit 1
+          }
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9.-]+$ ]] || {
+            echo "Invalid deployment host"
+            exit 1
+          }
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy published image
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_READ_TOKEN: ${{ secrets.DOCKERHUB_READ_TOKEN }}
+          IMAGE_TAG: ${{ github.event.release.tag_name || inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          [[ "$DOCKERHUB_USERNAME" =~ ^[a-zA-Z0-9._-]+$ ]] || {
+            echo "Invalid Docker Hub username"
+            exit 1
+          }
+
+          remote_command="set -euo pipefail; trap 'docker logout >/dev/null 2>&1 || true' EXIT; docker login --username '$DOCKERHUB_USERNAME' --password-stdin; cd '$DEPLOY_PATH'; export IMAGE='$DOCKERHUB_IMAGE:$IMAGE_TAG'; docker compose pull api; docker compose up -d --no-deps --wait api"
+          printf '%s' "$DOCKERHUB_READ_TOKEN" |
+            ssh -i "$HOME/.ssh/deploy_key" \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              "$DEPLOY_USER@$DEPLOY_HOST" \
+              "$remote_command"

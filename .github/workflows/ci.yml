@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, amg-ci-cd]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, format, and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore SpendWise.slnx
+
+      - name: Check formatting
+        run: dotnet format SpendWise.slnx --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build SpendWise.slnx --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: >-
+          dotnet test SpendWise.slnx
+          --configuration Release
+          --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Build Docker image
+        run: docker build --tag spendwise-api:${{ github.sha }} .
