@@ -7,6 +7,7 @@ public sealed class User : BaseEntity
 {
     public string FirstName { get; private set; } = null!;
     public string LastName { get; private set; } = null!;
+    public string TimeZoneId { get; private set; } = "Etc/UTC";
 
     public User(Guid id, string firstName, string lastName) : base(id)
     {
@@ -30,5 +31,25 @@ public sealed class User : BaseEntity
         if (lastName.Length < 2 || lastName.Length > 50)
             throw new DomainValidationException("نام خانوادگی باید بین 2 تا 50 کاراکتر باشد.");
         LastName = lastName;
+    }
+    public void ChangeTimeZone(string timeZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+        {
+            throw new DomainValidationException("Time  zone Id can not be empty! ");
+        }
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            throw new DomainValidationException("The specific time zone is not supported!");
+        }
+        catch (InvalidTimeZoneException)
+        {
+            throw new DomainValidationException("The specific time zone is invalid!");
+        }
+        TimeZoneId = timeZoneId;
     }
 }

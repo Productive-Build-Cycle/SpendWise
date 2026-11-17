@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Common.Behaviors;
+using SpendWise.Application.Interfaces;
+using SpendWise.Application.Services;
 
 namespace SpendWise.Application;
 
@@ -27,7 +29,8 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(assembly);
-
+        services.AddSingleton<TimeProvider>(TimeProvider.System);
+        services.AddScoped<IUserLocalDateProvider, UserLocalDateProvider>();
         return services;
     }
 }

@@ -5,5 +5,6 @@
     <Project Path="src/SpendWise.Domain/SpendWise.Domain.csproj" />
     <Project Path="src/SpendWise.Infrastructure/SpendWise.Infrastructure.csproj" />
   </Folder>
+  <Project Path="SpendWise.Application.Test/SpendWise.Application.Test.csproj" Id="240d5760-15e0-4c6d-8410-94900a8e43ef" />
   <Project Path="SpendWise.Domain.Tests/SpendWise.Domain.Tests.csproj" Id="60cdc751-21ca-42c4-b1c7-560af95f0a87" />
 </Solution>

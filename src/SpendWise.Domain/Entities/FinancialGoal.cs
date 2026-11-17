@@ -4,12 +4,12 @@ using SpendWise.Domain.ValueObjects;
 
 namespace SpendWise.Domain.Entities
 {
-   public class FinancialGoal:BaseEntity
+    public class FinancialGoal : BaseEntity
     {
         public Guid UserId { get; private set; }
         public User User { get; private set; } = null!;
         public string GoalName { get; private set; } = string.Empty;
-        public Money TargetAmount { get; private set; } 
+        public Money TargetAmount { get; private set; }
         public DateOnly TargetDate { get; private set; }
         private readonly List<GoalContribution> _contributions = new();
         public IReadOnlyCollection<GoalContribution> Contributions => _contributions.AsReadOnly();
@@ -20,46 +20,50 @@ namespace SpendWise.Domain.Entities
         {
             TargetAmount = null!;
         }
-        public FinancialGoal(Guid userId, 
-                             string goalName, 
-                             Money targetAmount, 
-                             DateOnly targetDate
+        public FinancialGoal(Guid userId,
+                             string goalName,
+                             Money targetAmount,
+                             DateOnly targetDate,
+                             DateOnly currentDate
                             )
         {
             if (userId == Guid.Empty)
             {
                 throw new ArgumentException("User ID cannot be empty.", nameof(userId));
             }
-            if (string.IsNullOrWhiteSpace(goalName))
-            {
-                throw new ArgumentException("Goal name cannot be null or empty.", nameof(goalName));
-            }
-            if(goalName.Length > 100)
-            {
-                throw new DomainValidationException("Goal name cannot exceed 100 characters.");
-            }
+            goalName = ValidateGoalName(goalName);
 
-           ArgumentNullException.ThrowIfNull(targetAmount, nameof(targetAmount));
-            if (targetAmount.Amount <= 0)
-            {
-                throw new DomainValidationException(
-                                "Target amount must be greater than zero." );
-            }
-            if (targetAmount.Currency.Code != "USD")
-            {
-                throw new DomainValidationException(
-                    $"Financial goal currency in this version is only USD .");
-            }
-            if (targetDate <=DateOnly.FromDateTime(DateTime.UtcNow))
-            {
-                throw new ArgumentException("Target date must be in the future.", nameof(targetDate));
-            }
+            ValidateTargetAmount(targetAmount);
+
+            ValidateTargetDate(targetDate, currentDate);
+
             UserId = userId;
-            GoalName = goalName.Trim();
+            GoalName = goalName;
             TargetAmount = targetAmount;
             TargetDate = targetDate;
+
         }
         //...............................................................
+        public void Update(string goalName,
+            Money targetAmount,
+            DateOnly targetDate,
+            DateOnly currentDate)
+        {
+            if (IsArchived)
+            {
+                throw new DomainValidationException("Cannot update an archived financial goal !");
+            }
+            goalName = ValidateGoalName(goalName);
+           
+            ValidateTargetAmount(targetAmount);
+
+            ValidateTargetDate(targetDate, currentDate);
+
+            GoalName = goalName;
+            TargetAmount = targetAmount;
+            TargetDate = targetDate;
+
+        }
         public void AddContribution(GoalContribution contribution)
         {
             if (IsArchived)
@@ -107,6 +111,42 @@ namespace SpendWise.Domain.Entities
             }
 
             IsArchived = true;
+        }
+        private static string ValidateGoalName(string goalName)
+        {
+            if (string.IsNullOrWhiteSpace(goalName))
+            {
+                throw new ArgumentException("" +
+                    "Goal name can not be null or empty!", nameof(goalName));
+            }
+            goalName = goalName.Trim();
+            if (goalName.Length > 100)
+            {
+                throw new DomainValidationException("Goal name can not exceed 100 characters .");
+            }
+            return goalName;
+        }
+        private static void ValidateTargetAmount(Money targetAmount)
+        {
+            ArgumentNullException.ThrowIfNull(targetAmount);
+            if (targetAmount.Amount <= 0)
+            {
+                throw new DomainValidationException("Target amount must be greater than zero.");
+            }
+            if (targetAmount.Currency.Code != "USD")
+            {
+                throw new DomainValidationException(
+                    "Financial goal currency in this version is only USD .");
+            }
+        }
+
+        private static void ValidateTargetDate(DateOnly targetDate,
+            DateOnly currentDate)
+        {
+            if (targetDate <= currentDate)
+            {
+                throw new DomainValidationException("Target date must be in the future.");
+            }
         }
     }
 }
