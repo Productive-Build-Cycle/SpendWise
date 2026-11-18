@@ -7,10 +7,7 @@ COPY ["src/SpendWise.Application/SpendWise.Application.csproj", "src/SpendWise.A
 COPY ["src/SpendWise.Domain/SpendWise.Domain.csproj", "src/SpendWise.Domain/"]
 COPY ["src/SpendWise.Infrastructure/SpendWise.Infrastructure.csproj", "src/SpendWise.Infrastructure/"]
 
-COPY ["SpendWise.Application.Test/SpendWise.Application.Test.csproj", "SpendWise.Application.Test/"]
-COPY ["SpendWise.Domain.Tests/SpendWise.Domain.Tests.csproj", "SpendWise.Domain.Tests/"]
-
-RUN dotnet restore SpendWise.slnx
+RUN dotnet restore src/SpendWise.Api/SpendWise.Api.csproj
 
 COPY . .
 RUN dotnet publish src/SpendWise.Api/SpendWise.Api.csproj -c Release -o /app/publish /p:UseAppHost=false

@@ -37,7 +37,8 @@ namespace SpendWise.Api.Controllers
 
         [HttpPut]
         [Route("{goalId:guid}")]
-        public async Task<IActionResult> Update(
+        
+        public async Task<IActionResult> UpdateFinancialGoalByIdAsync(
             [FromRoute] Guid goalId,
             [FromBody] UpdateFinancialGoalRequest request,
             CancellationToken cancellationToken)
