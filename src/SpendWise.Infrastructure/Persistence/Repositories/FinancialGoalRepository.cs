@@ -12,6 +12,7 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
         {
             _dbContext = dbContext;
         }
+
         public async Task<FinancialGoal?> FindByIdForUserAsync(Guid financialGoalId,
             Guid userId,
             CancellationToken cancellationToken = default)
@@ -19,6 +20,26 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
             return await _dbContext.FinancialGoals.SingleOrDefaultAsync(
                  g => g.UserId == userId && g.Id == financialGoalId,
                  cancellationToken);
+        }
+        public async Task<FinancialGoal?> FindByIdForUserReadOnlyAsync(Guid financialGoalId,
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.FinancialGoals
+                .AsNoTracking()
+                .SingleOrDefaultAsync(
+                g => g.UserId == userId && g.Id == financialGoalId,
+                cancellationToken);
+
+        }
+        public async Task<IReadOnlyList<FinancialGoal>> GetAllForUserReadOnlyAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await _dbContext.FinancialGoals
+                .AsNoTracking()
+                .Where(g => g.UserId == userId)
+                .ToListAsync(cancellationToken);
         }
 
         public void Add(FinancialGoal financialGoal)

@@ -13,3 +13,4 @@ namespace SpendWise.Application.Features.Commands.FinancialGoals.Update
         DateOnly TargetDate) : IRequest<Unit>;
 
 }
+ 

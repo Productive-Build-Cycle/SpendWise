@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpendWise.Api.Contracts.FinancialGoals;
+using SpendWise.Application.DTOs;
 using SpendWise.Application.Features.Commands.FinancialGoals.Create;
 using SpendWise.Application.Features.Commands.FinancialGoals.Update;
+using SpendWise.Application.Features.Queries.FinancialGoals.GetAll;
+using SpendWise.Application.Features.Queries.FinancialGoals.GetById;
 
 namespace SpendWise.Api.Controllers
 {
@@ -19,7 +22,7 @@ namespace SpendWise.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFinancialGoal(
+        public async Task<IActionResult> Create(
             [FromBody] CreateFinancialGoalRequest request,
             CancellationToken cancellationToken)
         {
@@ -34,7 +37,7 @@ namespace SpendWise.Api.Controllers
 
         [HttpPut]
         [Route("{goalId:guid}")]
-        public async Task<IActionResult> UpdateFinancialGoalByIdAsync(
+        public async Task<IActionResult> Update(
             [FromRoute] Guid goalId,
             [FromBody] UpdateFinancialGoalRequest request,
             CancellationToken cancellationToken)
@@ -47,6 +50,24 @@ namespace SpendWise.Api.Controllers
                 request.TargetDate),
                 cancellationToken);
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IReadOnlyList<FinancialGoalDto>>> GetAll(
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(new GetAllFinancialGoalsQuery(),
+                cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet("{goalId:guid}")]
+        public async Task<ActionResult<FinancialGoalDto>> GetById(
+            Guid goalId, CancellationToken cancellationToken)
+        {
+            var result = await _sender.Send(new GetFinancialGoalByIdQuery(goalId),
+                cancellationToken);
+            return Ok(result);
         }
     }
 }
