@@ -38,6 +38,8 @@
 - Transfer decreases the source account balance and increases the destination account balance.
 - Account balances must be updated consistently with the transaction.
 - A transaction must not cause an account balance to become negative, except where the account type explicitly permits it under the agreed domain rules.
+- Deleting a transaction must restore the balances of the accounts it affected: the destination is debited and the source is credited, with the direction reversed for credit cards.
+- A transaction cannot be deleted if restoring the balances would break a rule, for example when the money has already been spent or the credit card debt has already been paid off.
 
 ## 4. Budget Rules
 

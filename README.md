@@ -150,6 +150,7 @@ A production-ready Dockerfile and docker-compose configuration will be added to 
 - `POST /api/transactions` — Record transaction (`Income`, `Expense` or `Transfer`)
 - `POST /api/transactions/income` — Record income
 - `POST /api/transactions/expense` — Record expense
+- `DELETE /api/transactions/{transactionId}` — Delete transaction and restore the affected account balances
 
 **Query Parameters:** `pageNumber` (default `1`), `pageSize` (default `20`, max `100`), `fromDate`, `toDate`, `categoryId`, `type` (`Income`, `Expense` or `Transfer`)
 
@@ -184,7 +185,22 @@ The list is ordered from the newest transaction to the oldest and returns `items
 - Creating a transaction updates account balances in the same save: income increases the destination, expense decreases the source, and a transfer does both. Insufficient funds (or a credit limit that would be exceeded) is rejected with `400` and nothing is saved.
 - For credit cards the balance is the outstanding debt, so spending from a card increases it and money going into a card pays it down.
 - All amounts are in USD with at most two decimal places.
-- Transactions are append-only for now: there are no update or delete endpoints.
+- Transactions cannot be edited. To correct a mistake, delete the transaction and record it again.
+
+**Deleting a transaction:**
+
+```http
+DELETE /api/transactions/{transactionId}
+```
+
+Returns `204 No Content` on success. Deleting a transaction undoes its effect on the account balances in the same save: the amount of an income is taken back from the destination account, the amount of an expense returns to the source account, and a transfer moves the money back from the destination to the source. For credit cards the direction is reversed, because the balance is the outstanding debt.
+
+| Status | When |
+|--------|------|
+| `204` | The transaction was deleted and balances were restored |
+| `400` | The money can no longer be taken back, for example the income was already spent, or the purchase on a credit card was already paid off. Nothing is changed |
+| `401` | The request is not authenticated |
+| `404` | The transaction does not exist or belongs to another user |
 
 #### Transfers
 - `GET /api/transfers` — List transfers
