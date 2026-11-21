@@ -18,5 +18,10 @@ public interface ITransactionRepository
     Task<Transactions?> FindByIdForUserReadOnlyAsync(Guid transactionId, Guid userId,
         CancellationToken cancellationToken = default);
 
+    Task<Transactions?> FindByIdForUserAsync(Guid transactionId, Guid userId,
+        CancellationToken cancellationToken = default);
+
     void Add(Transactions transaction);
+
+    void Remove(Transactions transaction);
 }
