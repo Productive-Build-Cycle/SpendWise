@@ -62,10 +62,24 @@ public sealed class TransactionRepository : ITransactionRepository
             .SingleOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, cancellationToken);
     }
 
+    public Task<Transactions?> FindByIdForUserAsync(Guid transactionId, Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Transactions
+            .SingleOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, cancellationToken);
+    }
+
     public void Add(Transactions transaction)
     {
         ArgumentNullException.ThrowIfNull(transaction);
 
         _dbContext.Transactions.Add(transaction);
+    }
+
+    public void Remove(Transactions transaction)
+    {
+        ArgumentNullException.ThrowIfNull(transaction);
+
+        _dbContext.Transactions.Remove(transaction);
     }
 }

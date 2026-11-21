@@ -123,6 +123,36 @@ namespace SpendWise.Domain.Entities
         /// </summary>
         public void ApplyToAccounts(Account? sourceAccount, Account? destinationAccount)
         {
+            EnsureAccountsMatch(sourceAccount, destinationAccount);
+
+            // The debit runs first so a failed withdrawal never leaves a partially applied transfer.
+            if (sourceAccount is not null)
+                Debit(sourceAccount, Amount);
+
+            if (destinationAccount is not null)
+                Credit(destinationAccount, Amount);
+        }
+
+        /// <summary>
+        /// Undoes <see cref="ApplyToAccounts"/> so that balances return to what they were before
+        /// this transaction. The destination is debited and the source is credited.
+        /// The reversal fails with a domain error when the money is no longer there, for example
+        /// when the destination balance has since been spent, so the transaction cannot be removed silently.
+        /// </summary>
+        public void ReverseOnAccounts(Account? sourceAccount, Account? destinationAccount)
+        {
+            EnsureAccountsMatch(sourceAccount, destinationAccount);
+
+            // Taking money back from the destination is the step most likely to fail, so it runs first.
+            if (destinationAccount is not null)
+                Debit(destinationAccount, Amount);
+
+            if (sourceAccount is not null)
+                Credit(sourceAccount, Amount);
+        }
+
+        private void EnsureAccountsMatch(Account? sourceAccount, Account? destinationAccount)
+        {
             if (SourceAccountId.HasValue)
             {
                 ArgumentNullException.ThrowIfNull(sourceAccount, nameof(sourceAccount));
@@ -142,13 +172,6 @@ namespace SpendWise.Domain.Entities
             {
                 throw new DomainValidationException("This transaction does not have a destination account.");
             }
-
-            // The debit runs first so a failed withdrawal never leaves a partially applied transfer.
-            if (sourceAccount is not null)
-                Debit(sourceAccount, Amount);
-
-            if (destinationAccount is not null)
-                Credit(destinationAccount, Amount);
         }
 
         private void EnsureAccountMatches(Account account, Guid expectedAccountId, string role)

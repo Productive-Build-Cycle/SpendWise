@@ -5,6 +5,7 @@ using SpendWise.Api.Contracts.Transactions;
 using SpendWise.Application.Common.Models;
 using SpendWise.Application.DTOs;
 using SpendWise.Application.Features.Commands.Transactions.Create;
+using SpendWise.Application.Features.Commands.Transactions.Delete;
 using SpendWise.Application.Features.Queries.Transactions.Get;
 using SpendWise.Application.Features.Queries.Transactions.GetById;
 using SpendWise.Domain.Enums;
@@ -100,5 +101,13 @@ public sealed class TransactionsController : ControllerBase
             cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { transactionId }, new { id = transactionId });
+    }
+
+    [HttpDelete("{transactionId:guid}")]
+    public async Task<IActionResult> Delete(Guid transactionId, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new DeleteTransactionCommand(transactionId), cancellationToken);
+
+        return NoContent();
     }
 }
