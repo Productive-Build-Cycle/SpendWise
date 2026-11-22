@@ -61,7 +61,7 @@ namespace SpendWise.Domain.Tests
         public void Archive_FinancialGoalWithRemainingAmount_ThrowsValidationException()
         {
             // Arrange
-            var currentDate = new DateOnly(2023, 11, 15);
+            var currentDate = new DateOnly(2026, 11, 15);
             var goal = new FinancialGoal(
                 Guid.NewGuid(),
                 "Buy a car",
@@ -69,10 +69,9 @@ namespace SpendWise.Domain.Tests
                 currentDate.AddMonths(5),
                 currentDate);
 
-            var remainingAmount = new Money(0, new Currency("USD"));
             goal.Archive();
 
-            var contributionDate = new DateOnly(2026, 11, 15);
+            var contributionDate = new DateOnly(2023, 11, 15);
             var contribution = new GoalContribution(
                 goal.Id,
                 new Money(1000, new Currency("USD")),
@@ -128,7 +127,14 @@ namespace SpendWise.Domain.Tests
                 currentDate.AddMonths(6),
                 currentDate);
 
-            var remainingAmount = new Money(500, new Currency("USD"));
+            var contribution = new GoalContribution(
+                goal.Id,
+                 new Money(500, new Currency("USD")),
+                 currentDate,
+                 currentDate,
+                 Guid.NewGuid());
+
+            goal.AddContribution(contribution);
 
             // Act & Assert
             Assert.Throws<DomainValidationException>(
