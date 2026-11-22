@@ -27,12 +27,24 @@ namespace SpendWise.Application.Features.Queries.FinancialGoals.GetById
             {
                 throw new NotFoundException("Financial goal not found !");
             }
+            var totalSaved = goal.Contributions.Sum(
+                contribution => contribution.RemainingAmount.Amount);
+            var remainingAmount = Math.Max(0,
+                goal.TargetAmount.Amount - totalSaved);
+            var progressPercentage = goal.TargetAmount.Amount > 0
+                ? Math.Round(
+                    totalSaved / goal.TargetAmount.Amount * 100m, 2)
+                : 0;
+
             return new FinancialGoalDto(
                 goal.UserId,
                 goal.GoalName,
                 goal.TargetAmount.Amount,
                 goal.TargetAmount.Currency.Code,
                 goal.TargetDate,
+                totalSaved,
+                remainingAmount,
+                progressPercentage,
                 goal.IsArchived);
         }
     }

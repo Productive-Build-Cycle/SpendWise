@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendWise.Application.Interfaces;
+using SpendWise.Application.Services;
 using SpendWise.Infrastructure.Authentication.Jwt;
 using SpendWise.Infrastructure.Authentication.RefreshTokens;
 using SpendWise.Infrastructure.Identity;
@@ -58,8 +59,9 @@ public static class DependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         services.AddScoped<IFinancialGoalRepository, FinancialGoalRepository>();
-
-        services.AddScoped<IFinancialGoalRepository, FinancialGoalRepository>();
+        services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
+        services.AddScoped<IGoalContributionReleaseRepository, GoalContributionReleaseRepository>();
+        services.AddScoped<IGoalContributionReleaseService, GoalContributionReleaseService>();
 
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 

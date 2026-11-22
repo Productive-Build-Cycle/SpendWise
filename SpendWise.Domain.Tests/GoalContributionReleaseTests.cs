@@ -12,11 +12,15 @@ namespace SpendWise.Domain.Tests
             var releaseAmount = new Money(100, new Currency("USD"));
             var releaseDate = DateOnly.FromDateTime(DateTime.UtcNow);
             var transactionId = Guid.NewGuid();
+            var currentDate = DateOnly.FromDateTime(DateTime.UtcNow);
             // Act
-            var release = new GoalContributionRelease(goalContributionId,
-                                                      releaseAmount,
-                                                      releaseDate,
-                                                      transactionId);
+            var release = new GoalContributionRelease(
+                goalContributionId,
+                releaseAmount,
+                releaseDate,
+                currentDate,
+                transactionId);
+
             // Assert
             Assert.Equal(goalContributionId, release.GoalContributionId);
             Assert.Equal(releaseAmount, release.ReleaseAmount);

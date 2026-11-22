@@ -9,5 +9,5 @@ public sealed record CreateTransactionCommand(
     Guid? CategoryId,
     decimal Amount,
     string? Description,
-    DateTime? TransactionDate
+    DateTimeOffset? TransactionDate
 ) : IRequest<Guid>;

@@ -17,5 +17,16 @@ namespace SpendWise.Application.Services
             DateTimeOffset userLocalTime = TimeZoneInfo.ConvertTime(utcNow, userTimeZone);
             return DateOnly.FromDateTime(userLocalTime.DateTime);
         }
+
+        public DateOnly GetUserLocalDate(DateTimeOffset dateTime, string timeZoneId)
+        {
+            TimeZoneInfo userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            DateTimeOffset userLocalTime = TimeZoneInfo.ConvertTime(
+                dateTime,
+                userTimeZone);
+
+            return DateOnly.FromDateTime(userLocalTime.DateTime);
+        }
     }
 }

@@ -11,5 +11,11 @@
 
         DateOnly TargetDate,
 
+        decimal TotalSaved,
+
+        decimal RemainingAmount,
+
+        decimal ProgressPercetage,
+
         bool IsArchived);
 }

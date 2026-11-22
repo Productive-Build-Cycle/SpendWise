@@ -17,7 +17,10 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
             Guid userId,
             CancellationToken cancellationToken = default)
         {
-            return await _dbContext.FinancialGoals.SingleOrDefaultAsync(
+            return await _dbContext.FinancialGoals
+                .Include(g => g.Contributions)
+                .ThenInclude(c => c.Releases)
+                .SingleOrDefaultAsync(
                  g => g.UserId == userId && g.Id == financialGoalId,
                  cancellationToken);
         }
@@ -27,6 +30,8 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
         {
             return await _dbContext.FinancialGoals
                 .AsNoTracking()
+                .Include(g => g.Contributions)
+                .ThenInclude(c => c.Releases)
                 .SingleOrDefaultAsync(
                 g => g.UserId == userId && g.Id == financialGoalId,
                 cancellationToken);
@@ -38,6 +43,8 @@ namespace SpendWise.Infrastructure.Persistence.Repositories
         {
             return await _dbContext.FinancialGoals
                 .AsNoTracking()
+                .Include(g => g.Contributions)
+                .ThenInclude(c => c.Releases)
                 .Where(g => g.UserId == userId)
                 .ToListAsync(cancellationToken);
         }
