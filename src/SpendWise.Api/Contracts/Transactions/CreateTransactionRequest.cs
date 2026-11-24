@@ -7,4 +7,4 @@ public sealed record CreateTransactionRequest(
     Guid? CategoryId,
     decimal Amount,
     string? Description,
-    DateTime? TransactionDate);
+    DateTimeOffset? TransactionDate);

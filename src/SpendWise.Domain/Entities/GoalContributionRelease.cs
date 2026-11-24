@@ -22,6 +22,7 @@ namespace SpendWise.Domain.Entities
         public GoalContributionRelease(Guid goalContributionId,
                                        Money releaseAmount,
                                        DateOnly releaseDate,
+                                       DateOnly currentDate,
                                        Guid? transactionId = null)
         {
             if (transactionId == Guid.Empty)
@@ -40,13 +41,13 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "Release amount must be in USD.");
             }
-            ;
+
             if (releaseAmount.Amount <= 0)
             {
                 throw new DomainValidationException(
                     "Release amount must be greater than zero.");
             }
-            if (releaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            if (releaseDate > currentDate)
             {
                 throw new DomainValidationException(
                    "Release date cannot be in the future.");

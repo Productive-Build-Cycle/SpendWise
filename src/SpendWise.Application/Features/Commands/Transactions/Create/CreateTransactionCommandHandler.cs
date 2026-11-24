@@ -100,16 +100,8 @@ public sealed class CreateTransactionCommandHandler : IRequestHandler<CreateTran
         return transaction.Id;
     }
 
-    private static DateTime NormalizeToUtc(DateTime? date)
+    private static DateTime NormalizeToUtc(DateTimeOffset? date)
     {
-        if (!date.HasValue)
-            return DateTime.UtcNow;
-
-        return date.Value.Kind switch
-        {
-            DateTimeKind.Utc => date.Value,
-            DateTimeKind.Local => date.Value.ToUniversalTime(),
-            _ => DateTime.SpecifyKind(date.Value, DateTimeKind.Utc)
-        };
+        return date?.UtcDateTime ?? DateTime.UtcNow;
     }
 }

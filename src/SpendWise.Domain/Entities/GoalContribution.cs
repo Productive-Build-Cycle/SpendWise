@@ -34,10 +34,11 @@ namespace SpendWise.Domain.Entities
         public GoalContribution(Guid financialGoalId,
                                 Money contributionAmount,
                                 DateOnly contributionDate,
+                                DateOnly currentDate,
                                 Guid accountId,
                                 Guid? transactionId = null)
         {
-            if (transactionId == Guid.Empty)
+            if (transactionId.HasValue && transactionId == Guid.Empty)
             {
                 throw new ArgumentException(
                     "Transaction ID cannot be empty.", nameof(transactionId));
@@ -55,7 +56,7 @@ namespace SpendWise.Domain.Entities
             {
                 throw new DomainValidationException("Contribution amount must be in USD.");
             }
-            if (contributionDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            if (contributionDate > currentDate)
             {
                 throw new DomainValidationException("Contribution date cannot be in the future.");
             }
@@ -69,7 +70,8 @@ namespace SpendWise.Domain.Entities
             AccountId = accountId;
             TransactionId = transactionId;
         }
-        public void AddRelease(GoalContributionRelease release)
+        public void AddRelease(GoalContributionRelease release,
+            DateOnly currentDay)
         {
             ArgumentNullException.ThrowIfNull(release);
             if (release.GoalContributionId != Id)
@@ -106,7 +108,7 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "The release date cannot be earlier than the contribution date.");
             }
-            if (release.ReleaseDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            if (release.ReleaseDate > currentDay)
             {
                 throw new DomainValidationException(
                     "The release date cannot be in the future.");

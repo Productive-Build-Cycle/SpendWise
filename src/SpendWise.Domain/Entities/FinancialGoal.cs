@@ -14,6 +14,12 @@ namespace SpendWise.Domain.Entities
         private readonly List<GoalContribution> _contributions = new();
         public IReadOnlyCollection<GoalContribution> Contributions => _contributions.AsReadOnly();
 
+        public Money RemainingAmount => new Money(
+            TargetAmount.Amount - _contributions.Sum(
+                c => c.RemainingAmount.Amount), TargetAmount.Currency);
+        public Money TotalSaved => new Money(
+            _contributions.Sum(c => c.RemainingAmount.Amount), TargetAmount.Currency);
+
         public bool IsArchived { get; private set; } = false;
 
         private FinancialGoal()
@@ -85,29 +91,30 @@ namespace SpendWise.Domain.Entities
                 throw new DomainValidationException(
                     "This contribution already exists in this financial goal.");
             }
+            if (contribution.ContributionAmount.Currency.Code != TargetAmount.Currency.Code)
+            {
+                throw new DomainValidationException(
+                    "Contribution currency must match the financial goal currency");
+            }
+            if (contribution.ContributionAmount.Amount > RemainingAmount.Amount)
+            {
+                throw new DomainValidationException(
+                    "Contribution amount exceeds the remaining goal target amount ");
+            }
 
             _contributions.Add(contribution);
         }
-        public void Archive(Money remainingAllocateAmount)
+        public void Archive()
         {
             if (IsArchived)
             {
                 throw new DomainValidationException("Financial goal is already archived.");
             }
 
-            ArgumentNullException.ThrowIfNull(remainingAllocateAmount);
-
-            if (remainingAllocateAmount.Amount < 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(remainingAllocateAmount),
-                    "Remaining allocated amount cannot be negative.");
-            }
-
-            if (remainingAllocateAmount.Amount > 0)
+            if (TotalSaved.Amount > 0)
             {
                 throw new DomainValidationException(
-                    "Cannot archive the financial goal with remaining allocated amount.");
+                    "Can not delete a financial goal with remaining contribution money");
             }
 
             IsArchived = true;

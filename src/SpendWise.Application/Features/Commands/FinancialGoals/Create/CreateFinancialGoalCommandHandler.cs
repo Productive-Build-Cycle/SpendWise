@@ -41,7 +41,8 @@ namespace SpendWise.Application.Features.Commands.FinancialGoals.Create
 
             var targetAmount = new Money(request.TargetAmount, currency);
 
-            var financialGoal = new FinancialGoal(userId, request.GoalName, targetAmount, request.TargetDate, currentDate);
+            var financialGoal = new FinancialGoal(userId,
+                request.GoalName, targetAmount, request.TargetDate, currentDate);
 
             _financialGoalRepository.Add(financialGoal);
 
