@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<IUserLocalDateProvider, UserLocalDateProvider>();
+        services.AddScoped<IUserLocalDateToUtcConverter, UserLocalDateToUtcConverter>();
         return services;
     }
 }
