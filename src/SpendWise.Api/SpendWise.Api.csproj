@@ -21,5 +21,9 @@
     <ProjectReference Include="..\SpendWise.Application\SpendWise.Application.csproj" />
     <ProjectReference Include="..\SpendWise.Infrastructure\SpendWise.Infrastructure.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Contracts\Reports\" />
+  </ItemGroup>
 
 </Project>

@@ -63,6 +63,9 @@ public static class DependencyInjection
         services.AddScoped<IGoalContributionReleaseRepository, GoalContributionReleaseRepository>();
         services.AddScoped<IGoalContributionReleaseService, GoalContributionReleaseService>();
 
+        services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IReportMontlySummeryRepository, ReportRepository>();
+
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName)
